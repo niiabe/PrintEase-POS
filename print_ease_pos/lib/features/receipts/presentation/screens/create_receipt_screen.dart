@@ -5,6 +5,7 @@ import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_input.dart';
 import '../../../../shared/widgets/app_loader.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../printer/presentation/controllers/print_controller.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
 import '../../data/models/receipt.dart';
 import '../controllers/receipt_provider.dart';
@@ -13,31 +14,63 @@ import '../widgets/receipt_item_widget.dart';
 import '../widgets/totals_widget.dart';
 
 class CreateReceiptScreen extends ConsumerStatefulWidget {
-  const CreateReceiptScreen({super.key});
+  final int? editReceiptId;
+
+  const CreateReceiptScreen({super.key, this.editReceiptId});
 
   @override
   ConsumerState<CreateReceiptScreen> createState() => _CreateReceiptScreenState();
 }
 
 class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
+  final _customerCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
+  bool _initialized = false;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      final settings = ref.read(settingsProvider);
-      ref.read(receiptProvider.notifier).startNewReceipt(settings.storeName);
-    });
+    Future.microtask(() => _initialize());
+  }
+
+  Future<void> _initialize() async {
+    final notifier = ref.read(receiptProvider.notifier);
+    final settings = ref.read(settingsProvider);
+
+    if (widget.editReceiptId != null) {
+      await notifier.loadReceiptById(widget.editReceiptId!);
+      final state2 = ref.read(receiptProvider);
+      final existing = state2.selectedReceipt;
+      if (existing != null && mounted) {
+        notifier.startEditReceipt(existing);
+        _customerCtrl.text = existing.customerName;
+        _notesCtrl.text = existing.notes ?? '';
+      }
+    } else {
+      notifier.startNewReceipt(settings.storeName);
+    }
+    if (mounted) _initialized = true;
+  }
+
+  @override
+  void dispose() {
+    _customerCtrl.dispose();
+    _notesCtrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(receiptProvider);
     final draft = state.draftReceipt;
+    final isEditing = widget.editReceiptId != null;
+    final settings = ref.watch(settingsProvider);
+    final taxPct = settings.taxPercentage;
 
     ref.listen(receiptProvider, (previous, next) {
       if (next.isSaving == false && previous?.isSaving == true && next.error == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Receipt saved')),
+          SnackBar(content: Text(isEditing ? 'Receipt updated' : 'Receipt saved')),
         );
         Navigator.of(context).pop();
       }
@@ -53,11 +86,11 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Receipt'),
+        title: Text(isEditing ? 'Edit Receipt' : 'New Receipt'),
         actions: [
           if (draft != null && draft.items.isNotEmpty)
             TextButton.icon(
-              onPressed: state.isSaving ? null : () => _saveReceipt(draft),
+              onPressed: state.isSaving ? null : () => _saveReceipt(draft, taxPct),
               icon: state.isSaving
                   ? const SizedBox(
                       width: 16,
@@ -69,13 +102,13 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
             ),
         ],
       ),
-      body: draft == null
+      body: draft == null || !_initialized
           ? const AppLoader()
-          : _buildForm(context, state, draft),
+          : _buildForm(context, state, draft, taxPct),
     );
   }
 
-  Widget _buildForm(BuildContext context, ReceiptState state, Receipt draft) {
+  Widget _buildForm(BuildContext context, ReceiptState state, Receipt draft, double taxPct) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
@@ -105,6 +138,7 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
           AppInput(
             label: 'Customer Name',
             hint: 'Optional',
+            controller: _customerCtrl,
             onChanged: (value) =>
                 ref.read(receiptProvider.notifier).updateDraftCustomer(value),
           ),
@@ -123,7 +157,7 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
                         context,
                         onSave: (item) => ref
                             .read(receiptProvider.notifier)
-                            .addDraftItem(item),
+                            .addDraftItem(item, taxPercentage: taxPct),
                       ),
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text('Add Item'),
@@ -148,11 +182,11 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
                         initialItem: item,
                         onSave: (updated) => ref
                             .read(receiptProvider.notifier)
-                            .updateDraftItem(idx, updated),
+                            .updateDraftItem(idx, updated, taxPercentage: taxPct),
                       ),
                       onDelete: () => ref
                           .read(receiptProvider.notifier)
-                          .removeDraftItem(idx),
+                          .removeDraftItem(idx, taxPercentage: taxPct),
                     );
                   }),
               ],
@@ -167,6 +201,7 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
             label: 'Notes',
             hint: 'Optional notes',
             maxLines: 3,
+            controller: _notesCtrl,
             onChanged: (value) =>
                 ref.read(receiptProvider.notifier).updateDraftNotes(value),
           ),
@@ -176,7 +211,7 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
             icon: Icons.save,
             onPressed: state.isSaving || draft.items.isEmpty
                 ? null
-                : () => _saveReceipt(draft),
+                : () => _saveReceipt(draft, taxPct),
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -184,15 +219,27 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
     );
   }
 
-  void _saveReceipt(Receipt draft) {
-    final customer = draft.customerName;
-    final notes = draft.notes;
-    ref.read(receiptProvider.notifier).saveReceipt(
-      draft.copyWith(
-        customerName: customer,
-        notes: notes,
-      ),
+  Future<void> _saveReceipt(Receipt draft, double taxPct) async {
+    final notifier = ref.read(receiptProvider.notifier);
+    final settings = ref.read(settingsProvider);
+
+    final receipt = draft.copyWith(
+      customerName: _customerCtrl.text.trim(),
+      notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
     );
+
+    if (widget.editReceiptId != null) {
+      final success = await notifier.updateReceipt(receipt);
+      if (success && settings.autoPrint && context.mounted) {
+        ref.read(printControllerProvider.notifier).printReceipt(receipt);
+      }
+    } else {
+      final id = await notifier.saveReceipt(receipt);
+      if (id != null && settings.autoPrint && context.mounted) {
+        final saved = receipt.copyWith(id: id);
+        ref.read(printControllerProvider.notifier).printReceipt(saved);
+      }
+    }
   }
 
   String _formatDate(DateTime date) {

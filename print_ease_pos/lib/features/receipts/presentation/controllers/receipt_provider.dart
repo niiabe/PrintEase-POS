@@ -92,14 +92,29 @@ class ReceiptNotifier extends StateNotifier<ReceiptState> {
     }
   }
 
-  Future<void> saveReceipt(Receipt receipt) async {
+  Future<int?> saveReceipt(Receipt receipt) async {
     state = state.copyWith(isSaving: true, error: null);
     try {
-      await _repository.saveReceipt(receipt);
+      final id = await _repository.saveReceipt(receipt);
       state = state.copyWith(isSaving: false, draftReceipt: null);
       await loadReceipts();
+      return id;
     } catch (e) {
       state = state.copyWith(isSaving: false, error: e.toString());
+      return null;
+    }
+  }
+
+  Future<bool> updateReceipt(Receipt receipt) async {
+    state = state.copyWith(isSaving: true, error: null);
+    try {
+      await _repository.updateReceipt(receipt);
+      state = state.copyWith(isSaving: false, draftReceipt: null, selectedReceipt: receipt);
+      await loadReceipts();
+      return true;
+    } catch (e) {
+      state = state.copyWith(isSaving: false, error: e.toString());
+      return false;
     }
   }
 
@@ -162,6 +177,10 @@ class ReceiptNotifier extends StateNotifier<ReceiptState> {
     );
   }
 
+  void startEditReceipt(Receipt receipt) {
+    state = state.copyWith(draftReceipt: receipt);
+  }
+
   void updateDraftCustomer(String name) {
     final draft = state.draftReceipt;
     if (draft == null) return;
@@ -178,27 +197,27 @@ class ReceiptNotifier extends StateNotifier<ReceiptState> {
     );
   }
 
-  void addDraftItem(ReceiptItem item) {
+  void addDraftItem(ReceiptItem item, {double taxPercentage = 0}) {
     final draft = state.draftReceipt;
     if (draft == null) return;
     state = state.copyWith(
-      draftReceipt: _repository.addItem(draft, item),
+      draftReceipt: _repository.addItem(draft, item, taxPercentage: taxPercentage),
     );
   }
 
-  void removeDraftItem(int index) {
+  void removeDraftItem(int index, {double taxPercentage = 0}) {
     final draft = state.draftReceipt;
     if (draft == null) return;
     state = state.copyWith(
-      draftReceipt: _repository.removeItem(draft, index),
+      draftReceipt: _repository.removeItem(draft, index, taxPercentage: taxPercentage),
     );
   }
 
-  void updateDraftItem(int index, ReceiptItem item) {
+  void updateDraftItem(int index, ReceiptItem item, {double taxPercentage = 0}) {
     final draft = state.draftReceipt;
     if (draft == null) return;
     state = state.copyWith(
-      draftReceipt: _repository.updateItem(draft, index, item),
+      draftReceipt: _repository.updateItem(draft, index, item, taxPercentage: taxPercentage),
     );
   }
 

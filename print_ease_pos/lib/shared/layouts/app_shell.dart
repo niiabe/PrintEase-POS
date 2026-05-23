@@ -24,12 +24,14 @@ class _BottomNavBar extends StatelessWidget {
     final location = GoRouterState.of(context).uri.toString();
 
     int currentIndex = 0;
-    if (location.startsWith(AppRoutes.receipts)) {
+    if (location.startsWith(AppRoutes.printer)) {
       currentIndex = 1;
-    } else if (location.startsWith(AppRoutes.templates)) {
+    } else if (location.startsWith(AppRoutes.receipts)) {
       currentIndex = 2;
-    } else if (location.startsWith(AppRoutes.settings)) {
+    } else if (location.startsWith(AppRoutes.templates)) {
       currentIndex = 3;
+    } else if (location.startsWith(AppRoutes.settings)) {
+      currentIndex = 4;
     }
 
     return BottomNavigationBar(
@@ -37,6 +39,11 @@ class _BottomNavBar extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       onTap: (index) => _onTap(context, index),
       items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.dashboard_outlined),
+          activeIcon: Icon(Icons.dashboard),
+          label: 'Dashboard',
+        ),
         BottomNavigationBarItem(
           icon: Icon(Icons.print_outlined),
           activeIcon: Icon(Icons.print),
@@ -64,12 +71,14 @@ class _BottomNavBar extends StatelessWidget {
   void _onTap(BuildContext context, int index) {
     switch (index) {
       case 0:
-        context.go(AppRoutes.printer);
+        context.go(AppRoutes.dashboard);
       case 1:
-        context.go(AppRoutes.receipts);
+        context.go(AppRoutes.printer);
       case 2:
-        context.go(AppRoutes.templates);
+        context.go(AppRoutes.receipts);
       case 3:
+        context.go(AppRoutes.templates);
+      case 4:
         context.go(AppRoutes.settings);
     }
   }

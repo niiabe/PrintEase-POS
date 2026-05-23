@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:printing/printing.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../shared/widgets/app_loader.dart';
 import '../../../../shared/widgets/app_error_view.dart';
-import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/dialogs/confirm_dialog.dart';
 import '../../data/models/pdf_document.dart';
 import '../controllers/pdf_provider.dart';
@@ -72,41 +72,10 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
   }
 
   Widget _buildPreview(PdfState pdfState, Uint8List bytes) {
-    final fileName = pdfState.selectedDocument?.fileName ?? 'document';
-    final fileSizeKb = pdfState.selectedDocument?.fileSizeKb ?? 0;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.memory(
-            bytes,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => AppCard(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.picture_as_pdf,
-                      size: 64, color: Colors.red),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'PDF ($fileName)',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    '${fileSizeKb.toStringAsFixed(1)} KB',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    return PdfPreview(
+      build: (format) => bytes,
+      canChangePageFormat: false,
+      canChangeOrientation: false,
     );
   }
 

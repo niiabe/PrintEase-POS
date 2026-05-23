@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_loader.dart';
@@ -83,6 +84,13 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
         ),
         const SizedBox(height: AppSpacing.sm),
         DownloadPdfButton(receiptId: receipt.id!),
+        const SizedBox(height: AppSpacing.sm),
+        AppButton(
+          label: 'Edit Receipt',
+          variant: ButtonVariant.outlined,
+          icon: Icons.edit,
+          onPressed: () => context.push('/receipts/${receipt.id}/edit'),
+        ),
         const SizedBox(height: AppSpacing.sm),
         AppButton(
           label: 'Delete Receipt',

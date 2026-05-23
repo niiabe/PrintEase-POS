@@ -1,13 +1,12 @@
 class AppRoutes {
   AppRoutes._();
 
-  static const String home = '/';
+  static const String dashboard = '/';
   static const String printer = '/printer';
-  static const String printerConnect = '/printer/connect';
-  static const String printerTest = '/printer/test';
   static const String receipts = '/receipts';
   static const String receiptDetail = '/receipts/:id';
   static const String receiptCreate = '/receipts/create';
+  static const String receiptEdit = '/receipts/:id/edit';
   static const String templates = '/templates';
   static const String templateDetail = '/templates/:id';
   static const String templateCreate = '/templates/create';

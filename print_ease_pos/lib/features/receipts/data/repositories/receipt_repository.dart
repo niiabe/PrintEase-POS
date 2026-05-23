@@ -49,30 +49,30 @@ class ReceiptRepository {
     return _datasource.getNextReceiptNumber();
   }
 
-  Receipt calculateTotals(Receipt receipt) {
+  Receipt calculateTotals(Receipt receipt, {double taxPercentage = 0}) {
     double subtotal = 0;
     for (final item in receipt.items) {
       subtotal += item.total;
     }
     subtotal = double.parse(subtotal.toStringAsFixed(2));
-    final tax = double.parse((subtotal * 0.125).toStringAsFixed(2));
+    final tax = double.parse((subtotal * (taxPercentage / 100)).toStringAsFixed(2));
     final total = double.parse((subtotal + tax).toStringAsFixed(2));
     return receipt.copyWith(subtotal: subtotal, tax: tax, total: total);
   }
 
-  Receipt addItem(Receipt receipt, ReceiptItem item) {
+  Receipt addItem(Receipt receipt, ReceiptItem item, {double taxPercentage = 0}) {
     final items = [...receipt.items, item];
-    return calculateTotals(receipt.copyWith(items: items));
+    return calculateTotals(receipt.copyWith(items: items), taxPercentage: taxPercentage);
   }
 
-  Receipt removeItem(Receipt receipt, int index) {
+  Receipt removeItem(Receipt receipt, int index, {double taxPercentage = 0}) {
     final items = [...receipt.items]..removeAt(index);
-    return calculateTotals(receipt.copyWith(items: items));
+    return calculateTotals(receipt.copyWith(items: items), taxPercentage: taxPercentage);
   }
 
-  Receipt updateItem(Receipt receipt, int index, ReceiptItem item) {
+  Receipt updateItem(Receipt receipt, int index, ReceiptItem item, {double taxPercentage = 0}) {
     final items = [...receipt.items];
     items[index] = item;
-    return calculateTotals(receipt.copyWith(items: items));
+    return calculateTotals(receipt.copyWith(items: items), taxPercentage: taxPercentage);
   }
 }

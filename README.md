@@ -2,14 +2,14 @@
 
 > Thermal receipt printing made easy. A lightweight, offline-first Flutter POS app for Bluetooth thermal printers.
 
-PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads), and print directly — no internet or account required.
+PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads and native preview), and print directly — no internet or account required. Features a dashboard, receipt editing, auto-print, and scan timeout/cancel.
 
 ---
 
 ## Features
 
 ### Printer Management
-- Bluetooth printer scanning & discovery
+- Bluetooth printer scanning & discovery (with 15s timeout & cancel)
 - Connect/disconnect with auto-reconnect
 - Preferred printer persistence
 - 58mm and 80mm paper size support
@@ -19,7 +19,8 @@ PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Desig
 ### Receipt Creation & History
 - Auto-generated receipt numbers (`RCP-YYYYMM-NNNN`)
 - Dynamic add/edit/remove receipt items
-- Configurable tax percentage (default 0%, from settings)
+- Configurable tax percentage (default 0%, properly applied to totals)
+- Edit existing receipts (items, customer, notes)
 - Customer name, store name, and notes
 - Search by receipt number, filter by date & print status
 - Swipe-to-delete with confirmation
@@ -37,11 +38,13 @@ PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Desig
 - Direct printing to connected Bluetooth printer
 - Print status tracking (not printed / printed / failed)
 - Reprint from receipt history
+- Auto-print after receipt creation (configurable)
 - Paper size-aware formatting
 - Configurable tax rate shown on printed receipt
 
 ### PDF Export
 - Generate thermal-style PDF receipts
+- Native PDF preview (scrollable, zoomable)
 - Save to Downloads folder (Android)
 - Share, print PDFs via system dialogs
 - PDF history with preview and management
@@ -79,15 +82,16 @@ Source icons available in `app_icons/`:
 
 | Screen | Description |
 |---|---|
-| **Printer** | Connection status, scan devices, test print, paper size selector |
+| **Dashboard** | Today's receipt count & sales, printer status, quick actions, recent receipts |
+| **Printer** | Connection status, scan devices (15s timeout + cancel), test print, paper size selector |
 | **Receipts** | List with search, status & date filters, swipe delete, PDF download |
-| **Create Receipt** | Form with dynamic items, auto-calculated totals, save |
-| **Receipt Detail** | Full view with print/reprint, download PDF, delete |
+| **Create/Edit Receipt** | Form with dynamic items, auto-calculated totals, save, auto-print |
+| **Receipt Detail** | Full view with print/reprint, edit, download PDF, delete |
 | **Templates** | Template list with swipe delete, tap to edit |
 | **Template Designer** | Live preview + all customization settings + logo picker + Save button with unsaved-changes guard |
 | **Settings** | Appearance, store info, printer, receipt defaults, default template, backup/restore, Save button |
 | **Backup & Restore** | Export/import app data to/from device storage |
-| **PDF Exports** | List of exported PDFs with preview, share, print, delete, save to Downloads |
+| **PDF Exports** | List of exported PDFs with native preview, share, print, delete, save to Downloads |
 
 ---
 
@@ -128,11 +132,12 @@ PrintEase-POS/
 │   │   ├── routes/                   # GoRouter config (ShellRoute)
 │   │   ├── shared/                   # Reusable widgets, dialogs, layouts
 │   │   └── features/                 # Feature modules
-│   │       ├── printer/              # Bluetooth scan, connect, print
-│   │       ├── receipts/             # CRUD, creation, history
+│   │       ├── dashboard/            # Home screen with stats & quick actions
+│   │       ├── printer/              # Bluetooth scan (timeout/cancel), connect, print
+│   │       ├── receipts/             # CRUD, creation, history, editing
 │   │       ├── templates/            # Template designer & preview
 │   │       ├── settings/             # Settings + backup/restore
-│   │       └── pdf_export/           # PDF generation & management
+│   │       └── pdf_export/           # PDF generation, preview & management
 │   ├── assets/images/                # Bundled app icon & logo
 │   └── android/ios/web/              # Platform configs
 ```
@@ -224,7 +229,6 @@ Built with [OpenCode AI](https://opencode.ai):
 
 ## Known Limitations
 
-- Tax percentage in settings updates the display label, but receipt totals are calculated at creation time using the tax % from that moment
 - Bluetooth only (no USB/Wi-Fi printer support)
 - Offline-only (no cloud sync)
 - `dart:io` imports make web deployment unsupported

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/bluetooth_platform_service.dart';
 import '../../data/datasources/printer_datasource.dart';
@@ -59,6 +60,7 @@ class PrinterState {
 
 class PrinterNotifier extends StateNotifier<PrinterState> {
   final PrinterRepository _repository;
+  Timer? _scanTimer;
 
   PrinterNotifier(this._repository) : super(const PrinterState());
 
@@ -74,6 +76,7 @@ class PrinterNotifier extends StateNotifier<PrinterState> {
   }
 
   Future<void> scanDevices() async {
+    _scanTimer?.cancel();
     state = state.copyWith(
       isScanning: true,
       error: null,
@@ -81,22 +84,36 @@ class PrinterNotifier extends StateNotifier<PrinterState> {
       isBluetoothOff: false,
       isPermissionDenied: false,
     );
+    _scanTimer = Timer(const Duration(seconds: 15), () {
+      if (state.isScanning) {
+        state = state.copyWith(
+          isScanning: false,
+          error: 'Scan timed out. Try again.',
+        );
+      }
+    });
     try {
       final devices = await _repository.scanDevices();
-      state = state.copyWith(devices: devices, isScanning: false);
+      _scanTimer?.cancel();
+      if (state.isScanning) {
+        state = state.copyWith(devices: devices, isScanning: false);
+      }
     } on BluetoothOffException {
+      _scanTimer?.cancel();
       state = state.copyWith(
         isScanning: false,
         isBluetoothOff: true,
         error: 'Bluetooth is turned off',
       );
     } on BluetoothPermissionException {
+      _scanTimer?.cancel();
       state = state.copyWith(
         isScanning: false,
         isPermissionDenied: true,
         error: 'Bluetooth permission denied',
       );
     } catch (e) {
+      _scanTimer?.cancel();
       final err = e.toString();
       if (err.contains('BLUETOOTH') || err.contains('bluetooth')) {
         state = state.copyWith(
@@ -111,6 +128,11 @@ class PrinterNotifier extends StateNotifier<PrinterState> {
         );
       }
     }
+  }
+
+  void cancelScan() {
+    _scanTimer?.cancel();
+    state = state.copyWith(isScanning: false, error: 'Scan cancelled');
   }
 
   Future<void> connect(PrinterDevice device) async {
@@ -175,6 +197,12 @@ class PrinterNotifier extends StateNotifier<PrinterState> {
 
   void clearPermissionDenied() {
     state = state.copyWith(isPermissionDenied: false);
+  }
+
+  @override
+  void dispose() {
+    _scanTimer?.cancel();
+    super.dispose();
   }
 }
 

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'app_routes.dart';
 import '../shared/layouts/app_shell.dart';
+import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/printer/presentation/screens/printer_screen.dart';
 import '../features/receipts/presentation/screens/receipts_screen.dart';
 import '../features/receipts/presentation/screens/receipt_detail_screen.dart';
@@ -17,11 +18,19 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: AppRoutes.printer,
+  initialLocation: AppRoutes.dashboard,
   routes: [
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
+        GoRoute(
+          path: AppRoutes.dashboard,
+          pageBuilder: (context, state) => _noTransitionPage(
+            context,
+            state,
+            const DashboardScreen(),
+          ),
+        ),
         GoRoute(
           path: AppRoutes.printer,
           pageBuilder: (context, state) => _noTransitionPage(
@@ -53,6 +62,16 @@ final GoRouter router = GoRouter(
                 state,
                 ReceiptDetailScreen(
                   receiptId: int.parse(state.pathParameters['id']!),
+                ),
+              ),
+            ),
+            GoRoute(
+              path: ':id/edit',
+              pageBuilder: (context, state) => _noTransitionPage(
+                context,
+                state,
+                CreateReceiptScreen(
+                  editReceiptId: int.parse(state.pathParameters['id']!),
                 ),
               ),
             ),

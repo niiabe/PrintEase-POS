@@ -32,7 +32,7 @@ class PrinterScannerWidget extends ConsumerWidget {
             Expanded(
               child: AppButton(
                 label: state.isScanning
-                    ? 'Scanning...'
+                    ? 'Scanning... (15s)'
                     : 'Scan Bluetooth Printers',
                 icon: Icons.bluetooth_searching,
                 onPressed: state.isScanning
@@ -56,6 +56,15 @@ class PrinterScannerWidget extends ConsumerWidget {
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              SizedBox(
+                height: 36,
+                child: TextButton(
+                  onPressed: () =>
+                      ref.read(printerProvider.notifier).cancelScan(),
+                  child: const Text('Cancel'),
+                ),
               ),
             ],
           ],
