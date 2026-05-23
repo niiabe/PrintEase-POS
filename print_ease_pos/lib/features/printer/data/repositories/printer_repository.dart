@@ -17,6 +17,9 @@ class PrinterRepository {
   Future<List<PrinterDevice>> scanDevices() async {
     try {
       return await _datasource.scanDevices();
+    } on BluetoothPermissionException {
+      await _bluetoothService.ensureBluetoothPermissions();
+      return _datasource.scanDevices();
     } on BluetoothOffException {
       await _bluetoothService.requestBluetoothEnable();
       return _datasource.scanDevices();

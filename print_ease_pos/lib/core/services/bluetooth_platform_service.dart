@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
+import 'permission_service.dart';
 
 class BluetoothPlatformService {
   static const _channel = MethodChannel('com.example.print_ease_pos/bluetooth');
+  final PermissionService _permissionService = PermissionService();
 
   Future<bool> requestBluetoothEnable() async {
     try {
@@ -10,5 +12,13 @@ class BluetoothPlatformService {
     } on MissingPluginException {
       return true;
     }
+  }
+
+  Future<bool> ensureBluetoothPermissions() async {
+    return _permissionService.requestAllBluetoothPermissions();
+  }
+
+  Future<bool> hasBluetoothPermission() async {
+    return _permissionService.checkBluetoothConnect();
   }
 }

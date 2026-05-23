@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
+import '../../../../core/services/pdf_save_service.dart';
 import '../models/pdf_document.dart';
 
 class PdfStorageService {
+  final PdfSaveService _pdfSaveService = PdfSaveService();
+
   Future<Directory> get _pdfDir async {
     final appDir = await getApplicationDocumentsDirectory();
     final dir = Directory('${appDir.path}/pdf_exports');
@@ -82,11 +85,8 @@ class PdfStorageService {
     if (doc == null) return null;
     final file = File(doc.filePath);
     if (!await file.exists()) return null;
-    final downloadDir = await getDownloadsDirectory();
-    if (downloadDir == null) return null;
-    final dest = File('${downloadDir.path}/${doc.fileName}');
-    await file.copy(dest.path);
-    return dest.path;
+    final uri = await _pdfSaveService.saveToPublicDownloads(file.path, doc.fileName);
+    return uri;
   }
 
   Future<PdfDocument?> _findDocument(int id) async {

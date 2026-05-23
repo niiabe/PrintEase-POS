@@ -1,0 +1,22 @@
+#Testing results
+
+-Bluetooth scanning: when Bluetooth is turned off Scanner does not work. it scans for Bluetooth when the Bluetooth of the device is turned on. 
+this works but we could also allow it to turn on the the Bluetooth then it is off on the device.
+
+-Saved PDF files is not shown in the Download folder
+
+-the tax calculation is correct
+
+- I have not tried the auto print feature yet
+
+#issues
+
+-templates have save  but do not have delete template
+-permission to request for :
+	-Notification
+	-Photos and videos
+	
+-let the downloaded PDF file download to Download folder and the Phone 
+
+
+

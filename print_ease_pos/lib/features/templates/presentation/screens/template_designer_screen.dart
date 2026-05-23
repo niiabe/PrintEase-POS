@@ -56,6 +56,11 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
         appBar: AppBar(
           title: Text(template?.name ?? 'Design Template'),
           actions: [
+            if (widget.templateId != null)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => _confirmDelete(),
+              ),
             TextButton.icon(
               onPressed: state.isSaving || !canSave ? null : _save,
               icon: state.isSaving
@@ -273,6 +278,34 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete() async {
+    final template = ref.read(templateProvider).editingTemplate;
+    if (template?.id == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Template?'),
+        content: Text('Are you sure you want to delete "${template!.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      final notifier = ref.read(templateProvider.notifier);
+      await notifier.deleteTemplate(template!.id!);
+      if (mounted) Navigator.of(context).pop();
+    }
   }
 
   Future<void> _save() async {
