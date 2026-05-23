@@ -45,7 +45,7 @@ class PdfRepository {
   }
 
   Future<String?> downloadPdf(int documentId) async {
-    return _storageService.saveToDownloads(documentId);
+    return _storageService.getLocalPath(documentId);
   }
 
   Future<Uint8List?> getPdfBytes(int documentId) async {

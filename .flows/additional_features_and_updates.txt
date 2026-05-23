@@ -158,3 +158,15 @@ Update this file whenever a new feature is added or an existing one is modified.
 - All testIssues.txt features verified present in code
 - flutter analyze passes with 0 issues
 - Files: android/gradle.properties
+
+--- Feature: Native PDF Download with System Progress Notifications ---
+- Replaced custom Kotlin MediaStore PDF save + flutter_local_notifications approach with flutter_file_downloader
+- flutter_file_downloader provides native Android download manager integration with system-level progress bar, completion, and failure notifications
+- Added DocumentDownloadService wrapping flutter_file_downloader API (takes local file path, copies to public Downloads)
+- Added permission_handler for runtime permission requests
+- Added downloadProgress to PdfState for UI progress tracking
+- Updated PdfActionButtons to show LinearProgressIndicator during download
+- Updated PdfRepository.downloadPdf to return local path; PdfNotifier handles the flutter_file_downloader call
+- Added getLocalPath() and getDocumentById() to PdfStorageService
+- Added INTERNET, maxSdkVersion constraints to legacy permissions in AndroidManifest.xml
+- Files: pubspec.yaml, AndroidManifest.xml, document_download_service.dart, pdf_provider.dart, pdf_action_buttons.dart, pdf_repository.dart, pdf_storage_service.dart

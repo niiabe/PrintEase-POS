@@ -45,7 +45,7 @@ PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Desig
 ### PDF Export
 - Generate thermal-style PDF receipts
 - Native PDF preview (scrollable, zoomable)
-- Save to Downloads folder (Android)
+- Save to Downloads folder with native system progress notification (via `flutter_file_downloader`)
 - Share, print PDFs via system dialogs
 - PDF history with preview and management
 
@@ -92,7 +92,7 @@ Source icons available in `app_icons/`:
 | **Template Designer** | Live preview + all customization settings + logo picker + Save button with unsaved-changes guard |
 | **Settings** | Appearance, store info, printer, receipt defaults, default template, App Permissions Center, backup/restore, Save button |
 | **Backup & Restore** | Export/import app data to/from device storage |
-| **PDF Exports** | List of exported PDFs with native preview, share, print, delete, save to Downloads |
+| **PDF Exports** | List of exported PDFs with native preview, share, print, delete, save to Downloads (with native progress notification) |
 
 ---
 
@@ -109,7 +109,7 @@ Source icons available in `app_icons/`:
 | **Database** | SQLite (`sqflite`) — tables: `receipts`, `receipt_items`, `templates` |
 | **Preferences** | `shared_preferences` (JSON-encoded settings) |
 | **Bluetooth** | `print_bluetooth_thermal` + `esc_pos_utils_plus` |
-| **PDF** | `pdf` + `printing` |
+| **PDF** | `pdf` + `printing` + `flutter_file_downloader` (native progress notifications) |
 | **Image Picker** | `image_picker` (for store logos in templates) |
 | **File Picker** | `file_picker` (for backup restore) |
 | **Formatting** | `intl` |

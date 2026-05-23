@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/services/notification_service.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../controllers/pdf_provider.dart';
@@ -17,6 +16,17 @@ class PdfActionButtons extends ConsumerWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (state.isDownloading && state.downloadProgress > 0 && state.downloadProgress < 100)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Column(
+              children: [
+                LinearProgressIndicator(value: state.downloadProgress / 100),
+                const SizedBox(height: 4),
+                Text('${state.downloadProgress.toStringAsFixed(0)}%', style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+          ),
         Row(
           children: [
             Expanded(
@@ -44,7 +54,7 @@ class PdfActionButtons extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         AppButton(
-          label: state.isDownloading ? 'Saving...' : 'Save to Downloads',
+          label: state.isDownloading ? 'Saving ${state.downloadProgress.toStringAsFixed(0)}%' : 'Save to Downloads',
           icon: Icons.download,
           variant: ButtonVariant.outlined,
           isLoading: state.isDownloading,
@@ -56,25 +66,17 @@ class PdfActionButtons extends ConsumerWidget {
     );
   }
 
-  Future<void> _saveToDownloads(
-      BuildContext context, WidgetRef ref, int documentId) async {
+  Future<void> _saveToDownloads(BuildContext context, WidgetRef ref, int documentId) async {
     try {
-      final path = await ref
-          .read(pdfProvider.notifier)
-          .downloadDocument(documentId);
+      final path = await ref.read(pdfProvider.notifier).downloadDocument(documentId);
       if (!context.mounted) return;
       if (path != null) {
-        final doc = ref.read(pdfProvider).selectedDocument;
-        final fileName = doc?.fileName ?? 'receipt.pdf';
-        await NotificationService().showPdfDownloaded(fileName, path);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('PDF saved — tap notification to open'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF saved to Downloads'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } catch (e) {
       if (!context.mounted) return;

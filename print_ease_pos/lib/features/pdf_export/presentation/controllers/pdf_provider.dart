@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/pdf_storage_service.dart';
 import '../../data/models/pdf_document.dart';
 import '../../data/repositories/pdf_repository.dart';
+import '../../data/services/document_download_service.dart';
 import '../../data/services/pdf_formatter.dart';
 import '../../../receipts/presentation/controllers/receipt_provider.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
@@ -15,6 +16,7 @@ class PdfState {
   final bool isExporting;
   final bool isSharing;
   final bool isDownloading;
+  final double downloadProgress;
   final String? error;
 
   const PdfState({
@@ -25,6 +27,7 @@ class PdfState {
     this.isExporting = false,
     this.isSharing = false,
     this.isDownloading = false,
+    this.downloadProgress = 0,
     this.error,
   });
 
@@ -36,6 +39,7 @@ class PdfState {
     bool? isExporting,
     bool? isSharing,
     bool? isDownloading,
+    double? downloadProgress,
     String? error,
     bool clearSelected = false,
     bool clearBytes = false,
@@ -48,6 +52,7 @@ class PdfState {
       isExporting: isExporting ?? this.isExporting,
       isSharing: isSharing ?? this.isSharing,
       isDownloading: isDownloading ?? this.isDownloading,
+      downloadProgress: downloadProgress ?? this.downloadProgress,
       error: error,
     );
   }
@@ -55,8 +60,9 @@ class PdfState {
 
 class PdfNotifier extends StateNotifier<PdfState> {
   final PdfRepository _repository;
+  final DocumentDownloadService _downloadService;
 
-  PdfNotifier(this._repository) : super(const PdfState());
+  PdfNotifier(this._repository, this._downloadService) : super(const PdfState());
 
   Future<void> loadDocuments() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -115,15 +121,29 @@ class PdfNotifier extends StateNotifier<PdfState> {
   }
 
   Future<String?> downloadDocument(int documentId) async {
-    state = state.copyWith(isDownloading: true, error: null);
+    state = state.copyWith(isDownloading: true, downloadProgress: 0, error: null);
     try {
       final path = await _repository.downloadPdf(documentId);
-      state = state.copyWith(isDownloading: false);
+      if (path != null) {
+        await _downloadService.downloadFile(
+          localPath: path,
+          fileName: _getFileName(documentId),
+          onProgress: (progress) {
+            state = state.copyWith(downloadProgress: progress);
+          },
+        );
+      }
+      state = state.copyWith(isDownloading: false, downloadProgress: 100);
       return path;
     } catch (e) {
-      state = state.copyWith(isDownloading: false, error: e.toString());
+      state = state.copyWith(isDownloading: false, downloadProgress: 0, error: e.toString());
       return null;
     }
+  }
+
+  String _getFileName(int documentId) {
+    final doc = state.documents.where((d) => d.id == documentId).firstOrNull;
+    return doc?.fileName ?? 'receipt_$documentId.pdf';
   }
 
   Future<void> deleteDocument(int id) async {
@@ -164,6 +184,13 @@ final pdfRepositoryProvider = Provider<PdfRepository>((ref) {
   );
 });
 
+final documentDownloadServiceProvider = Provider<DocumentDownloadService>((ref) {
+  return DocumentDownloadService();
+});
+
 final pdfProvider = StateNotifierProvider<PdfNotifier, PdfState>((ref) {
-  return PdfNotifier(ref.watch(pdfRepositoryProvider));
+  return PdfNotifier(
+    ref.watch(pdfRepositoryProvider),
+    ref.watch(documentDownloadServiceProvider),
+  );
 });

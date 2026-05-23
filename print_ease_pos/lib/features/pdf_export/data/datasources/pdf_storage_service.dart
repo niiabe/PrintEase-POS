@@ -80,6 +80,15 @@ class PdfStorageService {
     return await file.readAsBytes();
   }
 
+  Future<PdfDocument?> getDocumentById(int id) async {
+    return _findDocument(id);
+  }
+
+  Future<String?> getLocalPath(int id) async {
+    final doc = await _findDocument(id);
+    return doc?.filePath;
+  }
+
   Future<String?> saveToDownloads(int id) async {
     final doc = await _findDocument(id);
     if (doc == null) return null;
