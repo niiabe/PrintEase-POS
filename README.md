@@ -2,7 +2,7 @@
 
 > Thermal receipt printing made easy. A lightweight, offline-first Flutter POS app for Bluetooth thermal printers.
 
-PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF, and print directly — no internet or account required.
+PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads), and print directly — no internet or account required.
 
 ---
 
@@ -19,17 +19,18 @@ PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Desig
 ### Receipt Creation & History
 - Auto-generated receipt numbers (`RCP-YYYYMM-NNNN`)
 - Dynamic add/edit/remove receipt items
-- Configurable tax percentage (from settings)
+- Configurable tax percentage (default 0%, from settings)
 - Customer name, store name, and notes
 - Search by receipt number, filter by date & print status
 - Swipe-to-delete with confirmation
 
 ### Receipt Template Designer
 - Visual editor with live preview
-- Multiple preset templates (Shop, Restaurant, Invoice, Delivery Slip)
+- Auto-seeded default templates on first install (Shop, Restaurant, Invoice, Delivery Slip)
 - Customizable: store name, phone, header, footer, logo upload
 - Font size, alignment (left/center), spacing controls
 - Toggle visibility for logo, QR code, dividers, itemized list
+- Save button with unsaved-changes guard (confirmation dialog)
 
 ### Thermal Printing
 - Full ESC/POS command generation
@@ -41,12 +42,14 @@ PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Desig
 
 ### PDF Export
 - Generate thermal-style PDF receipts
-- Save, share, print PDFs via system dialogs
+- Save to Downloads folder (Android)
+- Share, print PDFs via system dialogs
 - PDF history with preview and management
 
 ### Settings & Data
 - Dark/Light theme toggle (persisted)
 - Store info (name, phone, currency, configurable tax %)
+- Default receipt template selector
 - Printer settings (paper width, print density, character size, line spacing)
 - Auto-connect, auto-save, auto-print toggles
 - Full backup & restore (database + settings + templates)
@@ -81,10 +84,10 @@ Source icons available in `app_icons/`:
 | **Create Receipt** | Form with dynamic items, auto-calculated totals, save |
 | **Receipt Detail** | Full view with print/reprint, download PDF, delete |
 | **Templates** | Template list with swipe delete, tap to edit |
-| **Template Designer** | Live preview + all customization settings + logo picker |
-| **Settings** | Appearance, store info, printer, receipt defaults, backup/restore |
+| **Template Designer** | Live preview + all customization settings + logo picker + Save button with unsaved-changes guard |
+| **Settings** | Appearance, store info, printer, receipt defaults, default template, backup/restore, Save button |
 | **Backup & Restore** | Export/import app data to/from device storage |
-| **PDF Exports** | List of exported PDFs with preview, share, print, delete |
+| **PDF Exports** | List of exported PDFs with preview, share, print, delete, save to Downloads |
 
 ---
 
@@ -214,6 +217,7 @@ Built with [OpenCode AI](https://opencode.ai):
 |---|---|
 | **flutter-master-architect** | Foundation, architecture, theme, routing |
 | **flutter-feature-builder** | Feature-by-feature implementation |
+| **flutter-expert-builder** | Advanced patterns, code quality, best practices |
 | **flutter-thermal-pos** | ESC/POS, receipt layout, thermal printing |
 
 ---

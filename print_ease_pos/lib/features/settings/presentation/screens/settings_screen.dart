@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/settings_slider_tile.dart';
 import '../../../../shared/widgets/settings_text_field_tile.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../templates/presentation/controllers/template_provider.dart';
+import '../../data/models/app_settings.dart';
 import '../controllers/settings_provider.dart';
 import '../widgets/settings_tile.dart';
 
@@ -148,6 +151,30 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: 'Export or import your data',
             onTap: () => context.push('/settings/backup'),
           ),
+
+          _sectionHeader(theme, 'Templates'),
+          SettingsTile(
+            icon: Icons.design_services,
+            title: 'Default Template',
+            subtitle: _templateSubtitle(settings, ref),
+            onTap: () => _showTemplatePicker(context, ref, settings),
+          ),
+
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'Save Settings',
+            icon: Icons.save,
+            onPressed: () {
+              ref.read(settingsProvider.notifier).updateSettings(settings);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Settings saved'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.xl),
         ],
       ),
     );
@@ -163,6 +190,64 @@ class SettingsScreen extends ConsumerWidget {
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
+      ),
+    );
+  }
+
+  String _templateSubtitle(AppSettings settings, WidgetRef ref) {
+    if (settings.defaultTemplateId == null) return 'None (use default layout)';
+    final templates = ref.read(templateProvider).templates;
+    final selected = templates.where((t) => t.id == settings.defaultTemplateId);
+    return selected.isNotEmpty ? selected.first.name : 'Not found';
+  }
+
+  void _showTemplatePicker(
+      BuildContext context, WidgetRef ref, AppSettings settings) {
+    final state = ref.read(templateProvider);
+    final templates = state.templates;
+
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Select Default Template'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              ref.read(settingsProvider.notifier).updateDefaultTemplateId(null);
+              Navigator.pop(context);
+            },
+            child: Text(
+              'None (use default layout)',
+              style: TextStyle(
+                fontWeight: settings.defaultTemplateId == null
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+          ),
+          if (templates.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('No templates available. Create one in the Templates tab.',
+                  style: TextStyle(color: Colors.grey)),
+            ),
+          ...templates.map((t) {
+            return SimpleDialogOption(
+              onPressed: () {
+                ref.read(settingsProvider.notifier).updateDefaultTemplateId(t.id);
+                Navigator.pop(context);
+              },
+              child: Text(
+                t.name,
+                style: TextStyle(
+                  fontWeight: t.id == settings.defaultTemplateId
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }

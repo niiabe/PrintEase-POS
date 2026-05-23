@@ -44,6 +44,10 @@ class PdfRepository {
     await Printing.layoutPdf(onLayout: (_) => bytes);
   }
 
+  Future<String?> downloadPdf(int documentId) async {
+    return _storageService.saveToDownloads(documentId);
+  }
+
   Future<Uint8List?> getPdfBytes(int documentId) async {
     return _storageService.readDocument(documentId);
   }

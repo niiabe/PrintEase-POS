@@ -14,6 +14,7 @@ class PdfState {
   final bool isLoading;
   final bool isExporting;
   final bool isSharing;
+  final bool isDownloading;
   final String? error;
 
   const PdfState({
@@ -23,6 +24,7 @@ class PdfState {
     this.isLoading = false,
     this.isExporting = false,
     this.isSharing = false,
+    this.isDownloading = false,
     this.error,
   });
 
@@ -33,6 +35,7 @@ class PdfState {
     bool? isLoading,
     bool? isExporting,
     bool? isSharing,
+    bool? isDownloading,
     String? error,
     bool clearSelected = false,
     bool clearBytes = false,
@@ -44,6 +47,7 @@ class PdfState {
       isLoading: isLoading ?? this.isLoading,
       isExporting: isExporting ?? this.isExporting,
       isSharing: isSharing ?? this.isSharing,
+      isDownloading: isDownloading ?? this.isDownloading,
       error: error,
     );
   }
@@ -107,6 +111,18 @@ class PdfNotifier extends StateNotifier<PdfState> {
       state = state.copyWith(isSharing: false);
     } catch (e) {
       state = state.copyWith(isSharing: false, error: e.toString());
+    }
+  }
+
+  Future<String?> downloadDocument(int documentId) async {
+    state = state.copyWith(isDownloading: true, error: null);
+    try {
+      final path = await _repository.downloadPdf(documentId);
+      state = state.copyWith(isDownloading: false);
+      return path;
+    } catch (e) {
+      state = state.copyWith(isDownloading: false, error: e.toString());
+      return null;
     }
   }
 
