@@ -50,6 +50,26 @@ class MainActivity : FlutterActivity() {
                 "checkBluetoothScan" -> {
                     result.success(hasPermission(Manifest.permission.BLUETOOTH_SCAN))
                 }
+                "checkNotification" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        result.success(hasPermission(Manifest.permission.POST_NOTIFICATIONS))
+                    } else {
+                        result.success(true)
+                    }
+                }
+                "checkMediaImages" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        result.success(
+                            hasPermission(Manifest.permission.READ_MEDIA_IMAGES) &&
+                            hasPermission(Manifest.permission.READ_MEDIA_VIDEO)
+                        )
+                    } else {
+                        result.success(
+                            hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE) &&
+                            hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        )
+                    }
+                }
                 "requestBluetoothConnect" -> {
                     pendingPermissionResult = result
                     requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), permissionRequestCode)
@@ -125,6 +145,7 @@ class MainActivity : FlutterActivity() {
                         permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                         permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     }
                     if (permissions.isEmpty()) {
                         result.success(true)
@@ -212,6 +233,9 @@ class MainActivity : FlutterActivity() {
                         input.copyTo(output)
                     }
                 }
+                val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                mediaScanIntent.data = Uri.fromFile(destFile)
+                sendBroadcast(mediaScanIntent)
                 return "OK:${Uri.fromFile(destFile)}"
             }
         } catch (e: Exception) {

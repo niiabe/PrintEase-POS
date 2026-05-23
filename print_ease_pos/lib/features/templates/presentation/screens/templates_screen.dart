@@ -90,7 +90,14 @@ class _TemplatesScreenState extends ConsumerState<TemplatesScreen> {
                           color: Theme.of(context).colorScheme.outline,
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.sm),
+                      const SizedBox(width: AppSpacing.xs),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () => _confirmDelete(context, ref, template),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
                       const Icon(Icons.chevron_right),
                     ],
                   ),
@@ -101,5 +108,29 @@ class _TemplatesScreenState extends ConsumerState<TemplatesScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, dynamic template) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Template?'),
+        content: Text('Are you sure you want to delete "${template.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      ref.read(templateProvider.notifier).deleteTemplate(template.id!);
+    }
   }
 }

@@ -21,6 +21,10 @@ class BluetoothPermissionException implements Exception {
 
 class PrinterDatasource {
   Future<List<PrinterDevice>> scanDevices() async {
+    final bool isEnabled = await PrintBluetoothThermal.bluetoothEnabled;
+    if (!isEnabled) {
+      throw const BluetoothOffException();
+    }
     try {
       final available = await PrintBluetoothThermal.pairedBluetooths;
       return available

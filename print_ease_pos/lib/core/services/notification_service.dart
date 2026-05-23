@@ -31,9 +31,13 @@ class NotificationService {
   void _onNotificationTap(NotificationResponse response) {
     final uri = response.payload;
     if (uri != null) {
-      OpenFilex.open(uri, type: 'application/pdf');
+      try {
+        OpenFilex.open(uri, type: 'application/pdf');
+      } catch (_) {}
     }
   }
+
+  int _notificationId = 0;
 
   Future<void> showPdfDownloaded(String fileName, String fileUri) async {
     if (!_initialized) await initialize();
@@ -51,8 +55,9 @@ class NotificationService {
       iOS: DarwinNotificationDetails(),
     );
 
+    final id = _notificationId++;
     await _plugin.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      id,
       'PDF Downloaded',
       '$fileName saved to Downloads',
       details,

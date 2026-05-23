@@ -263,6 +263,15 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
           icon: Icons.save,
           onPressed: currentState.isSaving || !canSave ? null : _save,
         ),
+        if (widget.templateId != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: 'Delete Template',
+            icon: Icons.delete_outline,
+            variant: ButtonVariant.outlined,
+            onPressed: currentState.isSaving ? null : _confirmDelete,
+          ),
+        ],
         const SizedBox(height: AppSpacing.xl),
       ],
     );

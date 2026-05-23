@@ -96,8 +96,65 @@ Update this file whenever a new feature is added or an existing one is modified.
 - Third-party plugins still apply KGP (warnings remain but build passes)
 - Files: pubspec.yaml, android/app/build.gradle.kts, android/settings.gradle.kts
 
+--- Fix: Kotlin Version Upgrade (2.0.0 → 2.2.20) to Resolve Deprecation Warning ---
+- Added `org.jetbrains.kotlin.android` version `2.2.20` (apply false) to settings.gradle.kts plugins block
+- Added classpath dependency `kotlin-gradle-plugin:2.2.20` to build.gradle.kts buildscript
+- Set `android.builtInKotlin=false` in gradle.properties (explicit KGP management)
+- These overrides force Kotlin 2.2.20 for all third-party plugins that apply KGP (print_bluetooth_thermal 1.8.22, image_picker_android 2.3.20, shared_preferences_android 2.3.0)
+- Result: "Flutter support for your project's Kotlin version (2.0.0) will soon be dropped" warning is resolved
+- Remaining "plugins apply KGP" architectural warning is from third-party plugins themselves and can't be fixed by our project
+- Files: android/settings.gradle.kts, android/build.gradle.kts, android/gradle.properties
+
 --- Chore: Dead Code Cleanup ---
 - Removed unused flutter_screenutil dependency from pubspec.yaml
 - Removed unused route constants: home, printerConnect, printerTest from app_routes.dart
 - Changed initialLocation from AppRoutes.printer to AppRoutes.dashboard
 - Files: pubspec.yaml, app_routes.dart, app_router.dart
+
+--- Feature: Bluetooth Enable Polling & Scan Retry ---
+- Checks Bluetooth enabled status dynamically before scan in PrinterDatasource
+- Natively requests Bluetooth enablement on scan error and polls/waits (up to 3 seconds) for adapter startup before scanning again
+- Files: printer_datasource.dart, printer_repository.dart, bluetooth_platform_service.dart
+
+--- Feature: PDF Save Storage Permission & Indexing ---
+- Added missing READ_EXTERNAL_STORAGE permission to AndroidManifest.xml
+- Included WRITE_EXTERNAL_STORAGE and READ_EXTERNAL_STORAGE in runtime permissions requests list for Android API <= 30
+- Added MediaScanner intent broadcast to index newly written PDF files immediately on Android API <= 28
+- Files: AndroidManifest.xml, MainActivity.kt
+
+--- Feature: Template Deletion Buttons ---
+- Added a Delete template trash icon button on the Templates list page
+- Added an explicit "Delete Template" outlined button at the bottom of the Template Designer settings form (when editing an existing template)
+- Files: templates_screen.dart, template_designer_screen.dart
+
+--- Feature: App Permissions Center in Settings ---
+- Added checkNotification and checkMediaImages status checks on the com.example.print_ease_pos/permissions channel
+- Exposed wrapper status checks in PermissionService
+- Converted SettingsScreen to ConsumerStatefulWidget, displaying dynamic, requestable tiles for Bluetooth, Notifications, and Media/Storage permissions
+- Files: MainActivity.kt, permission_service.dart, settings_screen.dart
+
+--- Fix: Kotlin Version Upgrade (2.0.0 → 2.2.20) to Resolve Deprecation Warning ---
+- Added `org.jetbrains.kotlin.android` version `2.2.20` (apply false) to settings.gradle.kts plugins block
+- Added classpath dependency `kotlin-gradle-plugin:2.2.20` to build.gradle.kts buildscript
+- Set `android.builtInKotlin=false` in gradle.properties (explicit KGP management)
+- These overrides force Kotlin 2.2.20 for all third-party plugins that apply KGP (print_bluetooth_thermal 1.8.22, image_picker_android 2.3.20, shared_preferences_android 2.3.0)
+- Result: "Flutter support for your project's Kotlin version (2.0.0) will soon be dropped" warning is resolved
+- Remaining "plugins apply KGP" architectural warning is from third-party plugins themselves and can't be fixed by our project
+- Files: android/settings.gradle.kts, android/build.gradle.kts, android/gradle.properties
+
+--- Fix: MissingPluginException Safety (permission_service, bluetooth_platform_service) ---
+- Changed all `MissingPluginException` catch blocks from `return true` (assume granted) to `return false` (assume denied)
+- Affects all check* and request* methods in PermissionService and BluetoothPlatformService
+- Prevents silent permission misconfiguration if native MethodChannel handler is missing
+- Files: lib/core/services/permission_service.dart, lib/core/services/bluetooth_platform_service.dart
+
+--- Fix: Notification Service Crashes & ID Collision ---
+- Wrapped `OpenFilex.open()` in try-catch in notification tap handler to prevent crash on missing/deleted file
+- Switched notification ID from seconds-based to monotonically incrementing counter to prevent overwriting notifications in the same second
+- Files: lib/core/services/notification_service.dart
+
+--- Chore: Code Review & Cleanup ---
+- Removed stale auto-generated comments from gradle.properties (builtInKotlin, newDsl)
+- All testIssues.txt features verified present in code
+- flutter analyze passes with 0 issues
+- Files: android/gradle.properties

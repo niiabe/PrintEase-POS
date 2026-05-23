@@ -8,7 +8,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('requestBluetoothConnect');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 
@@ -17,7 +17,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('requestBluetoothScan');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 
@@ -26,7 +26,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('requestLocation');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 
@@ -35,7 +35,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('requestAllBluetoothPermissions');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 
@@ -44,7 +44,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('checkBluetoothConnect');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 
@@ -53,7 +53,25 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('checkBluetoothScan');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
+    }
+  }
+
+  Future<bool> checkNotification() async {
+    try {
+      final result = await _channel.invokeMethod<bool>('checkNotification');
+      return result ?? false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
+  Future<bool> checkMediaImages() async {
+    try {
+      final result = await _channel.invokeMethod<bool>('checkMediaImages');
+      return result ?? false;
+    } on MissingPluginException {
+      return false;
     }
   }
 
@@ -62,7 +80,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('requestNotification');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 
@@ -71,7 +89,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('requestMediaImages');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 
@@ -80,7 +98,7 @@ class PermissionService {
       final result = await _channel.invokeMethod<bool>('requestAllAppPermissions');
       return result ?? false;
     } on MissingPluginException {
-      return true;
+      return false;
     }
   }
 }

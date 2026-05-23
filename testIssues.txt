@@ -1,22 +1,310 @@
-#Testing results
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    </queries>
+</manifest>
+package com.example.print_ease_pos
 
--Bluetooth scanning: when Bluetooth is turned off Scanner does not work. it scans for Bluetooth when the Bluetooth of the device is turned on. 
-this works but we could also allow it to turn on the the Bluetooth then it is off on the device.
+import android.Manifest
+                "checkBluetoothScan" -> {
+                    result.success(hasPermission(Manifest.permission.BLUETOOTH_SCAN))
+                }
+                "checkNotification" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        result.success(hasPermission(Manifest.permission.POST_NOTIFICATIONS))
+                    } else {
+                        result.success(true)
+                    }
+                }
+                "checkMediaImages" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        result.success(
+                            hasPermission(Manifest.permission.READ_MEDIA_IMAGES) &&
+                            hasPermission(Manifest.permission.READ_MEDIA_VIDEO)
+                        )
+                    } else {
+                        result.success(
+                            hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE) &&
+                            hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        )
+                    }
+                }
+                "requestBluetoothConnect" -> {
+                    pendingPermissionResult = result
+                    requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), permissionRequestCode)
+                        permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }
+                    if (permissions.isEmpty()) {
+                        result.success(true)
+                        input.copyTo(output)
+                    }
+                }
+                val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                mediaScanIntent.data = Uri.fromFile(destFile)
+                sendBroadcast(mediaScanIntent)
+                return "OK:${Uri.fromFile(destFile)}"
+            }
+        } catch (e: Exception) {
+    }
+}
+import 'package:flutter/services.dart';
+import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
+import 'permission_service.dart';
+class BluetoothPlatformService {
+  Future<bool> hasBluetoothPermission() async {
+    return _permissionService.checkBluetoothConnect();
+  }
+  Future<bool> isBluetoothEnabled() async {
+    try {
+      return await PrintBluetoothThermal.bluetoothEnabled;
+    } catch (_) {
+      return false;
+    }
+  }
+}
+import 'package:flutter/services.dart';
+class PermissionService {
+    }
+  }
+  Future<bool> checkNotification() async {
+    try {
+      final result = await _channel.invokeMethod<bool>('checkNotification');
+      return result ?? false;
+    } on MissingPluginException {
+      return true;
+    }
+  }
+  Future<bool> checkMediaImages() async {
+    try {
+      final result = await _channel.invokeMethod<bool>('checkMediaImages');
+      return result ?? false;
+    } on MissingPluginException {
+      return true;
+    }
+  }
+  Future<bool> requestNotification() async {
+    try {
+      final result = await _channel.invokeMethod<bool>('requestNotification');
+  }
+}
+import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'package:flutter/foundation.dart';
+class PrinterDatasource {
+  Future<List<PrinterDevice>> scanDevices() async {
+    final bool isEnabled = await PrintBluetoothThermal.bluetoothEnabled;
+    if (!isEnabled) {
+      throw const BluetoothOffException();
+    }
+    try {
+      final available = await PrintBluetoothThermal.pairedBluetooths;
+      return available
+  }
+}
+import '../../../../core/services/bluetooth_platform_service.dart';
+import '../datasources/printer_datasource.dart';
+import '../datasources/printer_preferences_service.dart';
+      await _bluetoothService.ensureBluetoothPermissions();
+      return _datasource.scanDevices();
+    } on BluetoothOffException {
+      await _bluetoothService.requestBluetoothEnable();
+      final enabled = await _bluetoothService.requestBluetoothEnable();
+      if (enabled) {
+        for (int i = 0; i < 6; i++) {
+          if (await _bluetoothService.isBluetoothEnabled()) {
+            break;
+          }
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
+      return _datasource.scanDevices();
+    }
+  }
+  }
+}
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/settings_slider_tile.dart';
+import '../../../../shared/widgets/settings_text_field_tile.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../templates/presentation/controllers/template_provider.dart';
+import '../../data/models/app_settings.dart';
+import '../controllers/settings_provider.dart';
+import '../widgets/settings_tile.dart';
+class SettingsScreen extends ConsumerWidget {
+import '../../../../core/services/permission_service.dart';
+class SettingsScreen extends ConsumerStatefulWidget {
+  const SettingsScreen({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  final _permissionService = PermissionService();
+  bool _bluetoothScanGranted = false;
+  bool _bluetoothConnectGranted = false;
+  bool _notificationGranted = false;
+  bool _mediaGranted = false;
+  @override
+  void initState() {
+    super.initState();
+    _checkAllPermissions();
+  }
+  Future<void> _checkAllPermissions() async {
+    final btScan = await _permissionService.checkBluetoothScan();
+    final btConnect = await _permissionService.checkBluetoothConnect();
+    final notif = await _permissionService.checkNotification();
+    final media = await _permissionService.checkMediaImages();
+    if (mounted) {
+      setState(() {
+        _bluetoothScanGranted = btScan;
+        _bluetoothConnectGranted = btConnect;
+        _notificationGranted = notif;
+        _mediaGranted = media;
+      });
+    }
+  }
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
+    final theme = Theme.of(context);
+            onTap: () => _showTemplatePicker(context, ref, settings),
+          ),
+          _sectionHeader(theme, 'App Permissions'),
+          SettingsTile(
+            icon: Icons.bluetooth,
+            title: 'Bluetooth Scan & Connect',
+            subtitle: _bluetoothScanGranted && _bluetoothConnectGranted
+                ? 'Granted'
+                : 'Denied - Tap to request',
+            trailing: Icon(
+              _bluetoothScanGranted && _bluetoothConnectGranted
+                  ? Icons.check_circle
+                  : Icons.warning_amber_rounded,
+              color: _bluetoothScanGranted && _bluetoothConnectGranted
+                  ? Colors.green
+                  : Colors.orange,
+            ),
+            onTap: () async {
+              await _permissionService.requestAllBluetoothPermissions();
+              await _checkAllPermissions();
+            },
+          ),
+          SettingsTile(
+            icon: Icons.notifications,
+            title: 'Notifications',
+            subtitle: _notificationGranted ? 'Granted' : 'Denied - Tap to request',
+            trailing: Icon(
+              _notificationGranted ? Icons.check_circle : Icons.warning_amber_rounded,
+              color: _notificationGranted ? Colors.green : Colors.orange,
+            ),
+            onTap: () async {
+              await _permissionService.requestNotification();
+              await _checkAllPermissions();
+            },
+          ),
+          SettingsTile(
+            icon: Icons.photo_library,
+            title: 'Photos & Videos',
+            subtitle: _mediaGranted ? 'Granted' : 'Denied - Tap to request',
+            trailing: Icon(
+              _mediaGranted ? Icons.check_circle : Icons.warning_amber_rounded,
+              color: _mediaGranted ? Colors.green : Colors.orange,
+            ),
+            onTap: () async {
+              await _permissionService.requestMediaImages();
+              await _checkAllPermissions();
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'Save Settings',
+  }
+}
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_spacing.dart';
+          icon: Icons.save,
+          onPressed: currentState.isSaving || !canSave ? null : _save,
+        ),
+        if (widget.templateId != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: 'Delete Template',
+            icon: Icons.delete_outline,
+            variant: ButtonVariant.outlined,
+            onPressed: currentState.isSaving ? null : _confirmDelete,
+          ),
+        ],
+        const SizedBox(height: AppSpacing.xl),
+      ],
+    );
+  }
+}
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      const SizedBox(width: AppSpacing.xs),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () => _confirmDelete(context, ref, template),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, dynamic template) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Template?'),
+        content: Text('Are you sure you want to delete "${template.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      ref.read(templateProvider.notifier).deleteTemplate(template.id!);
+    }
+  }
+}
 
--Saved PDF files is not shown in the Download folder
-
--the tax calculation is correct
-
-- I have not tried the auto print feature yet
-
-#issues
-
--templates have save  but do not have delete template
--permission to request for :
-	-Notification
-	-Photos and videos
-	
--let the downloaded PDF file download to Download folder and the Phone 
 
 
 

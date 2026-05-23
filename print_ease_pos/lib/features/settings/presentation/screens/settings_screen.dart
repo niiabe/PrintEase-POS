@@ -10,11 +10,45 @@ import '../../data/models/app_settings.dart';
 import '../controllers/settings_provider.dart';
 import '../widgets/settings_tile.dart';
 
-class SettingsScreen extends ConsumerWidget {
+import '../../../../core/services/permission_service.dart';
+
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  final _permissionService = PermissionService();
+  bool _bluetoothScanGranted = false;
+  bool _bluetoothConnectGranted = false;
+  bool _notificationGranted = false;
+  bool _mediaGranted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAllPermissions();
+  }
+
+  Future<void> _checkAllPermissions() async {
+    final btScan = await _permissionService.checkBluetoothScan();
+    final btConnect = await _permissionService.checkBluetoothConnect();
+    final notif = await _permissionService.checkNotification();
+    final media = await _permissionService.checkMediaImages();
+    if (mounted) {
+      setState(() {
+        _bluetoothScanGranted = btScan;
+        _bluetoothConnectGranted = btConnect;
+        _notificationGranted = notif;
+        _mediaGranted = media;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final theme = Theme.of(context);
 
@@ -158,6 +192,53 @@ class SettingsScreen extends ConsumerWidget {
             title: 'Default Template',
             subtitle: _templateSubtitle(settings, ref),
             onTap: () => _showTemplatePicker(context, ref, settings),
+          ),
+
+          _sectionHeader(theme, 'App Permissions'),
+          SettingsTile(
+            icon: Icons.bluetooth,
+            title: 'Bluetooth Scan & Connect',
+            subtitle: _bluetoothScanGranted && _bluetoothConnectGranted
+                ? 'Granted'
+                : 'Denied - Tap to request',
+            trailing: Icon(
+              _bluetoothScanGranted && _bluetoothConnectGranted
+                  ? Icons.check_circle
+                  : Icons.warning_amber_rounded,
+              color: _bluetoothScanGranted && _bluetoothConnectGranted
+                  ? Colors.green
+                  : Colors.orange,
+            ),
+            onTap: () async {
+              await _permissionService.requestAllBluetoothPermissions();
+              await _checkAllPermissions();
+            },
+          ),
+          SettingsTile(
+            icon: Icons.notifications,
+            title: 'Notifications',
+            subtitle: _notificationGranted ? 'Granted' : 'Denied - Tap to request',
+            trailing: Icon(
+              _notificationGranted ? Icons.check_circle : Icons.warning_amber_rounded,
+              color: _notificationGranted ? Colors.green : Colors.orange,
+            ),
+            onTap: () async {
+              await _permissionService.requestNotification();
+              await _checkAllPermissions();
+            },
+          ),
+          SettingsTile(
+            icon: Icons.photo_library,
+            title: 'Photos & Videos',
+            subtitle: _mediaGranted ? 'Granted' : 'Denied - Tap to request',
+            trailing: Icon(
+              _mediaGranted ? Icons.check_circle : Icons.warning_amber_rounded,
+              color: _mediaGranted ? Colors.green : Colors.orange,
+            ),
+            onTap: () async {
+              await _permissionService.requestMediaImages();
+              await _checkAllPermissions();
+            },
           ),
 
           const SizedBox(height: AppSpacing.md),

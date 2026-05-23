@@ -21,7 +21,15 @@ class PrinterRepository {
       await _bluetoothService.ensureBluetoothPermissions();
       return _datasource.scanDevices();
     } on BluetoothOffException {
-      await _bluetoothService.requestBluetoothEnable();
+      final enabled = await _bluetoothService.requestBluetoothEnable();
+      if (enabled) {
+        for (int i = 0; i < 6; i++) {
+          if (await _bluetoothService.isBluetoothEnabled()) {
+            break;
+          }
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
       return _datasource.scanDevices();
     }
   }

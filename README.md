@@ -2,7 +2,7 @@
 
 > Thermal receipt printing made easy. A lightweight, offline-first Flutter POS app for Bluetooth thermal printers.
 
-PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads and native preview), and print directly — no internet or account required. Features a dashboard, receipt editing, auto-print, and scan timeout/cancel.
+PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads and native preview), and print directly — no internet or account required. Features a dashboard, receipt editing, auto-print, scan timeout/cancel, audio permission, and a full App Permissions Center in Settings.
 
 ---
 
@@ -56,6 +56,7 @@ PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Desig
 - Printer settings (paper width, print density, character size, line spacing)
 - Auto-connect, auto-save, auto-print toggles
 - Full backup & restore (database + settings + templates)
+- App Permissions Center — view & request Bluetooth, Notifications, and Photos/Videos permissions
 
 ---
 
@@ -89,7 +90,7 @@ Source icons available in `app_icons/`:
 | **Receipt Detail** | Full view with print/reprint, edit, download PDF, delete |
 | **Templates** | Template list with swipe delete, tap to edit |
 | **Template Designer** | Live preview + all customization settings + logo picker + Save button with unsaved-changes guard |
-| **Settings** | Appearance, store info, printer, receipt defaults, default template, backup/restore, Save button |
+| **Settings** | Appearance, store info, printer, receipt defaults, default template, App Permissions Center, backup/restore, Save button |
 | **Backup & Restore** | Export/import app data to/from device storage |
 | **PDF Exports** | List of exported PDFs with native preview, share, print, delete, save to Downloads |
 
@@ -100,6 +101,9 @@ Source icons available in `app_icons/`:
 | Layer | Technology |
 |---|---|
 | **Framework** | Flutter (SDK ^3.11.5, upgraded to 3.44.0 / Dart 3.12.0) |
+| **Kotlin** | 2.2.20 (overrode 3rd-party plugin versions to resolve deprecation warning) |
+| **Gradle** | 8.14 + AGP 8.11.1 |
+| **Desugaring** | `coreLibraryDesugaring` enabled (for `flutter_local_notifications`) |
 | **State Management** | Riverpod (`flutter_riverpod` + `StateNotifier`) |
 | **Routing** | `go_router` with `ShellRoute` (persistent bottom nav) |
 | **Database** | SQLite (`sqflite`) — tables: `receipts`, `receipt_items`, `templates` |
@@ -199,7 +203,7 @@ flutter build apk --split-per-abi
 
 ### Android
 - **Min SDK:** Flutter default (typically 21+)
-- **Permissions:** BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION (Android 12+)
+- **Permissions:** BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION (maxSdkVersion=30), POST_NOTIFICATIONS, READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
 - **App Icons:** Custom PrintEasePOS icons across all densities + adaptive icon support (API 26+)
 
 ### App Icon Files
@@ -233,6 +237,9 @@ Built with [OpenCode AI](https://opencode.ai):
 - Offline-only (no cloud sync)
 - `dart:io` imports make web deployment unsupported
 - Print status requires manual refresh after printing
+- 3rd-party plugins (`image_picker_android`, `print_bluetooth_thermal`, `shared_preferences_android`) still apply KGP directly instead of using Flutter's built-in Kotlin — non-fatal warning until plugin authors update
+- No domain layer in architecture (empty `domain/` directories) — data + presentation layers only
+- No unit or widget tests beyond the default smoke test
 
 ---
 
