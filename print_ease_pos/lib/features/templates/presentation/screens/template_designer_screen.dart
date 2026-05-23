@@ -111,9 +111,7 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
   }
 
   Widget _buildDesigner(ReceiptTemplate template) {
-    final currentState = ref.watch(templateProvider);
     final notifier = ref.read(templateProvider.notifier);
-    final canSave = template.name.isNotEmpty;
 
     void onChanged(VoidCallback update) {
       setState(() => _hasChanges = true);
@@ -258,19 +256,26 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        AppButton(
-          label: currentState.isSaving ? 'Saving...' : 'Save Template',
-          icon: Icons.save,
-          onPressed: currentState.isSaving || !canSave ? null : _save,
-        ),
+        Consumer(builder: (context, ref, _) {
+          final saving = ref.watch(templateProvider.select((s) => s.isSaving));
+          final name = ref.watch(templateProvider.select((s) => s.editingTemplate?.name ?? ''));
+          return AppButton(
+            label: saving ? 'Saving...' : 'Save Template',
+            icon: Icons.save,
+            onPressed: saving || name.isEmpty ? null : _save,
+          );
+        }),
         if (widget.templateId != null) ...[
           const SizedBox(height: AppSpacing.sm),
-          AppButton(
-            label: 'Delete Template',
-            icon: Icons.delete_outline,
-            variant: ButtonVariant.outlined,
-            onPressed: currentState.isSaving ? null : _confirmDelete,
-          ),
+          Consumer(builder: (context, ref, _) {
+            final saving = ref.watch(templateProvider.select((s) => s.isSaving));
+            return AppButton(
+              label: 'Delete Template',
+              icon: Icons.delete_outline,
+              variant: ButtonVariant.outlined,
+              onPressed: saving ? null : _confirmDelete,
+            );
+          }),
         ],
         const SizedBox(height: AppSpacing.xl),
       ],
@@ -311,8 +316,11 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
       ),
     );
     if (confirmed == true && mounted) {
+      final t = ref.read(templateProvider).editingTemplate;
+      final id = t?.id;
+      if (id == null) return;
       final notifier = ref.read(templateProvider.notifier);
-      await notifier.deleteTemplate(template!.id!);
+      await notifier.deleteTemplate(id);
       if (mounted) Navigator.of(context).pop();
     }
   }
@@ -320,10 +328,19 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
   Future<void> _save() async {
     final navigator = Navigator.of(context);
     final notifier = ref.read(templateProvider.notifier);
-    await notifier.saveTemplate();
+    final success = await notifier.saveTemplate();
     if (mounted) {
-      setState(() => _hasChanges = false);
-      navigator.pop();
+      if (success) {
+        setState(() => _hasChanges = false);
+        navigator.pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Failed to save template'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
     }
   }
 }

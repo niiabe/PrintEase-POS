@@ -4,7 +4,7 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../../receipts/data/models/receipt.dart';
 import '../controllers/print_controller.dart';
 
-class PrintReceiptButton extends ConsumerWidget {
+class PrintReceiptButton extends ConsumerStatefulWidget {
   final Receipt receipt;
   final bool isReprint;
 
@@ -15,11 +15,15 @@ class PrintReceiptButton extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final printState = ref.watch(printControllerProvider);
+  ConsumerState<PrintReceiptButton> createState() => _PrintReceiptButtonState();
+}
 
-    ref.listen(printControllerProvider, (previous, next) {
-      if (next.message != null && context.mounted) {
+class _PrintReceiptButtonState extends ConsumerState<PrintReceiptButton> {
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(printControllerProvider, (previous, next) {
+      if (next.message != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.message!),
@@ -32,11 +36,16 @@ class PrintReceiptButton extends ConsumerWidget {
         );
       }
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final printState = ref.watch(printControllerProvider);
 
     return AppButton(
       label: printState.isPrinting
           ? 'Printing...'
-          : isReprint
+          : widget.isReprint
               ? 'Reprint'
               : 'Print Receipt',
       icon: printState.isPrinting ? null : Icons.print,
@@ -44,10 +53,10 @@ class PrintReceiptButton extends ConsumerWidget {
       onPressed: printState.isPrinting
           ? null
           : () {
-              if (isReprint) {
-                ref.read(printControllerProvider.notifier).reprintReceipt(receipt);
+              if (widget.isReprint) {
+                ref.read(printControllerProvider.notifier).reprintReceipt(widget.receipt);
               } else {
-                ref.read(printControllerProvider.notifier).printReceipt(receipt);
+                ref.read(printControllerProvider.notifier).printReceipt(widget.receipt);
               }
             },
     );

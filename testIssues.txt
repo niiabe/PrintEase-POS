@@ -1,4 +1,0 @@
-KGP plugin warning: image_picker_android, print_bluetooth_thermal, shared_preferences_android, flutter_file_downloader
-Flutter's built-in Kotlin (android.builtInKotlin=true) does NOT fix this — it brings back the Kotlin version deprecation warning.
-Best approach: explicit KGP 2.2.20 override (android.builtInKotlin=false + settings.gradle.kts + build.gradle.kts).
-This resolves the version warning; the "plugins apply KGP" warning is from plugin authors and cannot be fixed at project level.

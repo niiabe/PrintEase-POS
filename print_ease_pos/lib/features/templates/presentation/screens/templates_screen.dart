@@ -9,6 +9,7 @@ import '../../../../shared/widgets/app_dismissible_delete.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../routes/app_routes.dart';
 import '../controllers/template_provider.dart';
+import '../../data/models/receipt_template.dart';
 
 class TemplatesScreen extends ConsumerStatefulWidget {
   const TemplatesScreen({super.key});
@@ -71,7 +72,8 @@ class _TemplatesScreenState extends ConsumerState<TemplatesScreen> {
               confirmTitle: 'Delete Template',
               confirmMessage: 'Delete "${template.name}"?',
               onDelete: () {
-                ref.read(templateProvider.notifier).deleteTemplate(template.id!);
+                final id = template.id;
+                if (id != null) ref.read(templateProvider.notifier).deleteTemplate(id);
               },
               child: AppCard(
                 onTap: () => context.push('/templates/${template.id}'),
@@ -110,7 +112,9 @@ class _TemplatesScreenState extends ConsumerState<TemplatesScreen> {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, dynamic template) async {
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, ReceiptTemplate template) async {
+    final id = template.id;
+    if (id == null) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -130,7 +134,7 @@ class _TemplatesScreenState extends ConsumerState<TemplatesScreen> {
       ),
     );
     if (confirmed == true) {
-      ref.read(templateProvider.notifier).deleteTemplate(template.id!);
+      ref.read(templateProvider.notifier).deleteTemplate(id);
     }
   }
 }

@@ -221,16 +221,6 @@ class ReceiptNotifier extends StateNotifier<ReceiptState> {
     );
   }
 
-  void updatePrintStatus(int id, PrintStatus status) async {
-    final receipt = state.receipts.firstWhere((r) => r.id == id);
-    final updated = receipt.copyWith(printStatus: status);
-    await _repository.updateReceipt(updated);
-    if (state.selectedReceipt?.id == id) {
-      state = state.copyWith(selectedReceipt: updated);
-    }
-    await loadReceipts();
-  }
-
   void selectReceipt(Receipt receipt) {
     state = state.copyWith(selectedReceipt: receipt);
   }

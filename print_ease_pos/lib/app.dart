@@ -20,10 +20,14 @@ class _PrintEaseAppState extends ConsumerState<PrintEaseApp> {
   void initState() {
     super.initState();
     Future.microtask(() async {
-      await NotificationService().initialize();
-      await ref.read(settingsProvider.notifier).loadSettings();
-      await _seedDefaultTemplates();
-      await _requestPermissions();
+      try {
+        await NotificationService().initialize();
+        await ref.read(settingsProvider.notifier).loadSettings();
+        await _seedDefaultTemplates();
+        await _requestPermissions();
+      } catch (e) {
+        debugPrint('App init error: $e');
+      }
     });
   }
 

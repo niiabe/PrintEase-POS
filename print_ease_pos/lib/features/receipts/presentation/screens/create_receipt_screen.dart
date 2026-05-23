@@ -30,6 +30,22 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
   @override
   void initState() {
     super.initState();
+    ref.listenManual(receiptProvider, (previous, next) {
+      if (next.isSaving == false && previous?.isSaving == true && next.error == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(widget.editReceiptId != null ? 'Receipt updated' : 'Receipt saved')),
+        );
+        Navigator.of(context).pop();
+      }
+      if (next.error != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${next.error}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    });
     Future.microtask(() => _initialize());
   }
 
@@ -66,23 +82,6 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
     final isEditing = widget.editReceiptId != null;
     final settings = ref.watch(settingsProvider);
     final taxPct = settings.taxPercentage;
-
-    ref.listen(receiptProvider, (previous, next) {
-      if (next.isSaving == false && previous?.isSaving == true && next.error == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isEditing ? 'Receipt updated' : 'Receipt saved')),
-        );
-        Navigator.of(context).pop();
-      }
-      if (next.error != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${next.error}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    });
 
     return Scaffold(
       appBar: AppBar(

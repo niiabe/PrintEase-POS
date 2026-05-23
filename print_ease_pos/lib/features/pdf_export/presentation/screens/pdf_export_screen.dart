@@ -68,7 +68,8 @@ class _PdfExportScreenState extends ConsumerState<PdfExportScreen> {
               confirmTitle: 'Delete PDF',
               confirmMessage: 'Delete "${doc.fileName}"?',
               onDelete: () {
-                ref.read(pdfProvider.notifier).deleteDocument(doc.id!);
+                final id = doc.id;
+                if (id != null) ref.read(pdfProvider.notifier).deleteDocument(id);
               },
               child: _buildDocCard(doc),
             ),
@@ -98,11 +99,12 @@ class _PdfExportScreenState extends ConsumerState<PdfExportScreen> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: const Icon(Icons.share, size: 20),
-              onPressed: () =>
-                  ref.read(pdfProvider.notifier).shareDocument(doc.id!),
-            ),
+            if (doc.id != null)
+              IconButton(
+                icon: const Icon(Icons.share, size: 20),
+                onPressed: () =>
+                    ref.read(pdfProvider.notifier).shareDocument(doc.id!),
+              ),
             IconButton(
               icon: const Icon(Icons.delete_outline, size: 20),
               onPressed: () => _deleteDocument(doc),
@@ -121,7 +123,8 @@ class _PdfExportScreenState extends ConsumerState<PdfExportScreen> {
       confirmLabel: 'Delete',
     );
     if (confirmed == true && context.mounted) {
-      ref.read(pdfProvider.notifier).deleteDocument(doc.id!);
+      final id = doc.id;
+      if (id != null) ref.read(pdfProvider.notifier).deleteDocument(id);
     }
   }
 

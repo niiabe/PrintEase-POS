@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/pdf_provider.dart';
 
-class DownloadPdfButton extends ConsumerWidget {
+class DownloadPdfButton extends ConsumerStatefulWidget {
   final int receiptId;
   final bool compact;
 
@@ -13,13 +13,17 @@ class DownloadPdfButton extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(pdfProvider);
+  ConsumerState<DownloadPdfButton> createState() => _DownloadPdfButtonState();
+}
 
-    ref.listen<PdfState>(pdfProvider, (prev, next) {
+class _DownloadPdfButtonState extends ConsumerState<DownloadPdfButton> {
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(pdfProvider, (prev, next) {
       if (next.isExporting != (prev?.isExporting ?? false)) {
         if (!next.isExporting && next.error == null) {
-          if (context.mounted) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('PDF saved successfully'),
@@ -28,7 +32,7 @@ class DownloadPdfButton extends ConsumerWidget {
             );
           }
         } else if (next.error != null && !next.isExporting) {
-          if (context.mounted) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Failed to save PDF: ${next.error}'),
@@ -39,8 +43,13 @@ class DownloadPdfButton extends ConsumerWidget {
         }
       }
     });
+  }
 
-    if (compact) {
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(pdfProvider);
+
+    if (widget.compact) {
       return SizedBox(
         width: 28,
         height: 28,
@@ -76,6 +85,6 @@ class DownloadPdfButton extends ConsumerWidget {
   }
 
   void _exportPdf(WidgetRef ref) {
-    ref.read(pdfProvider.notifier).exportReceipt(receiptId);
+    ref.read(pdfProvider.notifier).exportReceipt(widget.receiptId);
   }
 }

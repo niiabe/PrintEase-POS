@@ -34,15 +34,6 @@ class ThermalPrintService {
   Future<PrintResult> reprintReceipt(Receipt receipt) async {
     return printReceipt(receipt);
   }
-
-  Future<bool> isPrinterReady() async {
-    return _datasource.isConnected();
-  }
-
-  Future<List<int>> previewReceipt(Receipt receipt) async {
-    final formatter = EscPosFormatter(paperWidth: _paperWidth);
-    return formatter.formatReceipt(receipt);
-  }
 }
 
 class PrintResult {

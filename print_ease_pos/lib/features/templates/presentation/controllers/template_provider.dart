@@ -74,16 +74,18 @@ class TemplateNotifier extends StateNotifier<TemplateState> {
     }
   }
 
-  Future<void> saveTemplate() async {
+  Future<bool> saveTemplate() async {
     final template = state.editingTemplate;
-    if (template == null) return;
+    if (template == null) return false;
     state = state.copyWith(isSaving: true, error: null);
     try {
       await _repository.saveTemplate(template);
       state = state.copyWith(isSaving: false, editingTemplate: null);
       await loadTemplates();
+      return true;
     } catch (e) {
       state = state.copyWith(isSaving: false, error: e.toString());
+      return false;
     }
   }
 

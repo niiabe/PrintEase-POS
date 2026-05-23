@@ -76,6 +76,9 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
   }
 
   Widget _buildActions(Receipt receipt) {
+    final id = receipt.id;
+    if (id == null) return const SizedBox.shrink();
+
     return Column(
       children: [
         PrintReceiptButton(
@@ -83,13 +86,13 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
           isReprint: receipt.printStatus == PrintStatus.printed,
         ),
         const SizedBox(height: AppSpacing.sm),
-        DownloadPdfButton(receiptId: receipt.id!),
+        DownloadPdfButton(receiptId: id),
         const SizedBox(height: AppSpacing.sm),
         AppButton(
           label: 'Edit Receipt',
           variant: ButtonVariant.outlined,
           icon: Icons.edit,
-          onPressed: () => context.push('/receipts/${receipt.id}/edit'),
+          onPressed: () => context.push('/receipts/$id/edit'),
         ),
         const SizedBox(height: AppSpacing.sm),
         AppButton(
@@ -112,8 +115,10 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
     );
     if (confirmed != true) return;
     if (!context.mounted) return;
+    final id = receipt.id;
+    if (id == null) return;
     final notifier = ref.read(receiptProvider.notifier);
-    await notifier.deleteReceipt(receipt.id!);
+    await notifier.deleteReceipt(id);
     navigator.pop();
   }
 }

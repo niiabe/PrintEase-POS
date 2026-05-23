@@ -249,7 +249,8 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
               confirmTitle: 'Delete Receipt',
               confirmMessage: 'Delete receipt #${receipt.receiptNumber}?',
               onDelete: () {
-                ref.read(receiptProvider.notifier).deleteReceipt(receipt.id!);
+                final id = receipt.id;
+                if (id != null) ref.read(receiptProvider.notifier).deleteReceipt(id);
               },
               child: AppCard(
                 child: ListTile(
@@ -270,10 +271,11 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
                             status: receipt.printStatus,
                             label: receipt.printStatusLabel,
                           ),
-                          DownloadPdfButton(
-                            receiptId: receipt.id!,
-                            compact: true,
-                          ),
+                          if (receipt.id != null)
+                            DownloadPdfButton(
+                              receiptId: receipt.id!,
+                              compact: true,
+                            ),
                           const Spacer(),
                           Flexible(
                             child: Text(
@@ -295,8 +297,10 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
                     ),
                   ),
                   onTap: () {
+                    final id = receipt.id;
+                    if (id == null) return;
                     ref.read(receiptProvider.notifier).selectReceipt(receipt);
-                    context.push('/receipts/${receipt.id}');
+                    context.push('/receipts/$id');
                   },
                 ),
               ),

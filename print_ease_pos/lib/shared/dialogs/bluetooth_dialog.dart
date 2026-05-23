@@ -70,23 +70,27 @@ class BluetoothDialog {
 
   static void _openBluetoothSettings() {
     if (Platform.isAndroid) {
-      Process.run('am', [
-        'start',
-        '-a',
-        'android.settings.BLUETOOTH_SETTINGS',
-      ]);
+      try {
+        Process.run('am', [
+          'start',
+          '-a',
+          'android.settings.BLUETOOTH_SETTINGS',
+        ]);
+      } catch (_) {}
     }
   }
 
   static void _openAppSettings() {
     if (Platform.isAndroid) {
-      Process.run('am', [
-        'start',
-        '-a',
-        'android.settings.APPLICATION_DETAILS_SETTINGS',
-        '-d',
-        'package:print_ease_pos',
-      ]);
+      try {
+        Process.run('am', [
+          'start',
+          '-a',
+          'android.settings.APPLICATION_DETAILS_SETTINGS',
+          '-d',
+          'package:print_ease_pos',
+        ]);
+      } catch (_) {}
     }
   }
 }

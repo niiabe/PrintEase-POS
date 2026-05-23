@@ -162,3 +162,15 @@ Update this file whenever a new feature is added or an existing one is modified.
 - Added INTERNET, maxSdkVersion constraints to legacy permissions in AndroidManifest.xml
 - Files: pubspec.yaml, AndroidManifest.xml, document_download_service.dart, pdf_provider.dart, pdf_action_buttons.dart, pdf_repository.dart, pdf_storage_service.dart
 - Known issue: flutter_file_downloader has compatibility issues on some Android devices; PDF may fail to copy to public Downloads
+
+--- Chore: Comprehensive Code Review Fixes ---
+- Safe route param parsing: replaced all `int.parse(state.pathParameters['id']!)` with `int.tryParse()` + `_InvalidRouteScreen` fallback (app_router.dart)
+- Added try-catch around app init microtask in initState (app.dart)
+- Fixed `ref.listen` in `build()` pattern: converted print_receipt_button, download_pdf_button, backup_restore_screen to ConsumerStatefulWidget with listenManual in initState; moved create_receipt_screen listen to initState
+- saveTemplate() returns Future<bool>; template designer shows error SnackBar on save failure instead of silently popping (template_provider.dart, template_designer_screen.dart)
+- Removed dead variables in _buildDesigner (currentState, canSave) — replaced with Consumer widgets (template_designer_screen.dart)
+- Fixed all nullable `id!` force-unwraps with null guards across receipts_screen, receipt_detail_screen, templates_screen, template_designer_screen, pdf_export_screen, pdf_preview_screen
+- Fixed `dynamic` type to `ReceiptTemplate` in templates_screen._confirmDelete
+- Added try-catch around Process.run in bluetooth_dialog.dart
+- Removed dead code: isPrinterReady(), previewReceipt() (thermal_print_service.dart), updatePrintStatus() (receipt_provider.dart)
+- Files: app_router.dart, app.dart, print_receipt_button.dart, download_pdf_button.dart, backup_restore_screen.dart, create_receipt_screen.dart, template_designer_screen.dart, template_provider.dart, templates_screen.dart, receipt_detail_screen.dart, receipts_screen.dart, pdf_export_screen.dart, pdf_preview_screen.dart, bluetooth_dialog.dart, thermal_print_service.dart, receipt_provider.dart

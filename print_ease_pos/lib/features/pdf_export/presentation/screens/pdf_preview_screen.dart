@@ -37,7 +37,7 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
       appBar: AppBar(
         title: Text(doc?.fileName ?? 'PDF Preview'),
         actions: [
-          if (doc != null)
+          if (doc != null && doc.id != null)
             IconButton(
               icon: const Icon(Icons.delete_outline),
               onPressed: () => _deleteDocument(doc.id!),
@@ -66,7 +66,7 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
     return Column(
       children: [
         Expanded(child: _buildPreview(state, state.pdfBytes!)),
-        _buildActions(doc.id!),
+        if (doc.id != null) _buildActions(doc.id!),
       ],
     );
   }

@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/backup_provider.dart';
 
-class BackupRestoreScreen extends ConsumerWidget {
+class BackupRestoreScreen extends ConsumerStatefulWidget {
   const BackupRestoreScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(backupProvider);
-    final theme = Theme.of(context);
+  ConsumerState<BackupRestoreScreen> createState() => _BackupRestoreScreenState();
+}
 
-    ref.listen<BackupState>(backupProvider, (prev, next) {
+class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(backupProvider, (prev, next) {
       if (next.message != null && !next.isLoading) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -23,6 +26,12 @@ class BackupRestoreScreen extends ConsumerWidget {
         }
       }
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(backupProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Backup & Restore')),

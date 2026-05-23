@@ -57,23 +57,29 @@ final GoRouter router = GoRouter(
             ),
             GoRoute(
               path: ':id',
-              pageBuilder: (context, state) => _noTransitionPage(
-                context,
-                state,
-                ReceiptDetailScreen(
-                  receiptId: int.parse(state.pathParameters['id']!),
-                ),
-              ),
+              pageBuilder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '');
+                return _noTransitionPage(
+                  context,
+                  state,
+                  id != null
+                      ? ReceiptDetailScreen(receiptId: id)
+                      : const _InvalidRouteScreen(),
+                );
+              },
             ),
             GoRoute(
               path: ':id/edit',
-              pageBuilder: (context, state) => _noTransitionPage(
-                context,
-                state,
-                CreateReceiptScreen(
-                  editReceiptId: int.parse(state.pathParameters['id']!),
-                ),
-              ),
+              pageBuilder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '');
+                return _noTransitionPage(
+                  context,
+                  state,
+                  id != null
+                      ? CreateReceiptScreen(editReceiptId: id)
+                      : const _InvalidRouteScreen(),
+                );
+              },
             ),
           ],
         ),
@@ -95,13 +101,16 @@ final GoRouter router = GoRouter(
             ),
             GoRoute(
               path: ':id',
-              pageBuilder: (context, state) => _noTransitionPage(
-                context,
-                state,
-                TemplateDesignerScreen(
-                  templateId: int.parse(state.pathParameters['id']!),
-                ),
-              ),
+              pageBuilder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '');
+                return _noTransitionPage(
+                  context,
+                  state,
+                  id != null
+                      ? TemplateDesignerScreen(templateId: id)
+                      : const _InvalidRouteScreen(),
+                );
+              },
             ),
           ],
         ),
@@ -133,13 +142,16 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: ':id',
-              pageBuilder: (context, state) => _noTransitionPage(
-                context,
-                state,
-                PdfPreviewScreen(
-                  documentId: int.parse(state.pathParameters['id']!),
-                ),
-              ),
+              pageBuilder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '');
+                return _noTransitionPage(
+                  context,
+                  state,
+                  id != null
+                      ? PdfPreviewScreen(documentId: id)
+                      : const _InvalidRouteScreen(),
+                );
+              },
             ),
           ],
         ),
@@ -154,4 +166,15 @@ Page<void> _noTransitionPage(BuildContext context, GoRouterState state, Widget c
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
   );
+}
+
+class _InvalidRouteScreen extends StatelessWidget {
+  const _InvalidRouteScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: Text('Invalid route parameters')),
+    );
+  }
 }
