@@ -85,8 +85,9 @@ class PdfStorageService {
     if (doc == null) return null;
     final file = File(doc.filePath);
     if (!await file.exists()) return null;
-    final uri = await _pdfSaveService.saveToPublicDownloads(file.path, doc.fileName);
-    return uri;
+    final result = await _pdfSaveService.saveToPublicDownloads(file.path, doc.fileName);
+    if (result.success) return result.uri;
+    throw Exception(result.error ?? 'Failed to save PDF to Downloads');
   }
 
   Future<PdfDocument?> _findDocument(int id) async {

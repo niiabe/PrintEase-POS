@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/services/notification_service.dart';
 import 'core/services/permission_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/settings/presentation/controllers/settings_provider.dart';
@@ -19,6 +20,7 @@ class _PrintEaseAppState extends ConsumerState<PrintEaseApp> {
   void initState() {
     super.initState();
     Future.microtask(() async {
+      await NotificationService().initialize();
       await ref.read(settingsProvider.notifier).loadSettings();
       await _seedDefaultTemplates();
       await _requestPermissions();

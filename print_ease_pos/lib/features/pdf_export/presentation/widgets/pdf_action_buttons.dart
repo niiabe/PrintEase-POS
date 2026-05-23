@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../controllers/pdf_provider.dart';
@@ -57,22 +58,32 @@ class PdfActionButtons extends ConsumerWidget {
 
   Future<void> _saveToDownloads(
       BuildContext context, WidgetRef ref, int documentId) async {
-    final path = await ref
-        .read(pdfProvider.notifier)
-        .downloadDocument(documentId);
-    if (!context.mounted) return;
-    if (path != null) {
+    try {
+      final path = await ref
+          .read(pdfProvider.notifier)
+          .downloadDocument(documentId);
+      if (!context.mounted) return;
+      if (path != null) {
+        final doc = ref.read(pdfProvider).selectedDocument;
+        final fileName = doc?.fileName ?? 'receipt.pdf';
+        await NotificationService().showPdfDownloaded(fileName, path);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('PDF saved — tap notification to open'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('PDF saved — check notification'),
+          content: Text(e.toString()),
+          backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to save PDF'),
-          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 5),
         ),
       );
     }

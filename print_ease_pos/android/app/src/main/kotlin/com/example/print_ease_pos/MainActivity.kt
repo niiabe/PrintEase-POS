@@ -1,17 +1,13 @@
 package com.example.print_ease_pos
 
 import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
 import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -173,97 +169,54 @@ class MainActivity : FlutterActivity() {
     private fun savePdfToPublicDownloads(filePath: String, fileName: String): String? {
         return try {
             val file = File(filePath)
-            if (!file.exists()) return null
-
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.Downloads.IS_PENDING, 1)
-                }
-            }
-
-            val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-            if (uri == null) return null
-
-            val outputStream = contentResolver.openOutputStream(uri)
-            if (outputStream == null) {
-                contentResolver.delete(uri, null, null)
-                return null
-            }
-
-            outputStream.use { output ->
-                file.inputStream().use { input ->
-                    input.copyTo(output)
-                }
+            if (!file.exists()) {
+                return "ERROR:Source file not found at $filePath"
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                    put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+
+                val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri == null) {
+                    return "ERROR:MediaStore insert returned null (URI)"
+                }
+
+                val outputStream = contentResolver.openOutputStream(uri)
+                if (outputStream == null) {
+                    contentResolver.delete(uri, null, null)
+                    return "ERROR:Could not open output stream for URI"
+                }
+
+                outputStream.use { output ->
+                    file.inputStream().use { input ->
+                        input.copyTo(output)
+                    }
+                }
+
                 contentValues.clear()
                 contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
                 contentResolver.update(uri, contentValues, null, null)
+
+                return "OK:$uri"
+            } else {
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloadsDir.exists()) downloadsDir.mkdirs()
+                val destFile = File(downloadsDir, fileName)
+                file.inputStream().use { input ->
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                return "OK:${Uri.fromFile(destFile)}"
             }
-
-            showDownloadNotification(uri, fileName)
-
-            uri.toString()
         } catch (e: Exception) {
-            null
+            return "ERROR:${e.javaClass.simpleName}: ${e.message}"
         }
-    }
-
-    private fun showDownloadNotification(uri: Uri, fileName: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-                return
-            }
-        }
-
-        val channelId = "pdf_downloads"
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "PDF Downloads",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Notifications when PDF files are downloaded"
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/pdf")
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-
-        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            intent,
-            pendingIntentFlags
-        )
-
-        val notificationId = System.currentTimeMillis().toInt()
-
-        val notification = Notification.Builder(this, channelId)
-            .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setContentTitle("PDF Downloaded")
-            .setContentText("$fileName saved to Downloads")
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .build()
-
-        notificationManager.notify(notificationId, notification)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
