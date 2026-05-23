@@ -14,7 +14,7 @@ import '../controllers/receipt_provider.dart';
 import '../../data/models/receipt.dart';
 import '../../../pdf_export/presentation/widgets/download_pdf_button.dart';
 
-enum _DateRange { all, today, week, month }
+enum _DateRange { all, today, week, month, custom }
 
 class ReceiptsScreen extends ConsumerStatefulWidget {
   const ReceiptsScreen({super.key});
@@ -27,6 +27,7 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
   _DateRange _selectedDateRange = _DateRange.all;
+  DateTimeRange? _customDateRange;
 
   @override
   void initState() {
@@ -56,7 +57,7 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
       body: Column(
         children: [
           _buildSearchBar(),
-          _buildFilterChips(state),
+          _buildFilters(state),
           Expanded(child: _buildList(context, state)),
         ],
       ),
@@ -93,67 +94,103 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
     );
   }
 
-  Widget _buildFilterChips(ReceiptState state) {
-    final statuses = <PrintStatus?>[null, PrintStatus.notPrinted, PrintStatus.printed, PrintStatus.failed];
-    final labels = ['All', 'Not Printed', 'Printed', 'Failed'];
-    final icons = [Icons.all_inclusive, Icons.print_disabled, Icons.print, Icons.error_outline];
-
+  Widget _buildFilters(ReceiptState state) {
+    final statusItems = [
+      (null as PrintStatus?, 'All'),
+      (PrintStatus.notPrinted, 'Not Printed'),
+      (PrintStatus.printed, 'Printed'),
+      (PrintStatus.failed, 'Failed'),
+    ];
+    final dateRanges = [
+      (_DateRange.all, 'All Time'),
+      (_DateRange.today, 'Today'),
+      (_DateRange.week, 'This Week'),
+      (_DateRange.month, 'This Month'),
+      (_DateRange.custom, 'Custom'),
+    ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: List.generate(statuses.length, (i) {
-                final selected = state.filterStatus == statuses[i];
-                return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: FilterChip(
-                    label: Text(labels[i]),
-                    avatar: Icon(icons[i], size: 16),
-                    selected: selected,
-                    onSelected: (_) {
-                      ref.read(receiptProvider.notifier).setFilterStatus(statuses[i]);
-                    },
-                  ),
-                );
-              }),
+          Expanded(
+            child: InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Status',
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<PrintStatus?>(
+                  value: state.filterStatus,
+                  isExpanded: true,
+                  isDense: true,
+                  items: statusItems.map((item) {
+                    return DropdownMenuItem(
+                      value: item.$1,
+                      child: Text(item.$2, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    ref.read(receiptProvider.notifier).setFilterStatus(value);
+                  },
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _DateRange.values.map((range) {
-                final selected = _selectedDateRange == range;
-                return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: ChoiceChip(
-                    label: Text(_dateRangeLabel(range)),
-                    selected: selected,
-                    onSelected: (_) {
-                      setState(() => _selectedDateRange = range);
-                      _applyDateFilter(range);
-                    },
-                  ),
-                );
-              }).toList(),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Date',
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<_DateRange>(
+                  value: _selectedDateRange,
+                  isExpanded: true,
+                  isDense: true,
+                  items: dateRanges.map((item) {
+                    return DropdownMenuItem(
+                      value: item.$1,
+                      child: Text(item.$2, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (value) async {
+                    if (value == null) return;
+                    if (value == _DateRange.custom) {
+                      final picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now().add(const Duration(days: 1)),
+                        initialDateRange: _customDateRange ??
+                            DateTimeRange(
+                              start: DateTime.now(),
+                              end: DateTime.now(),
+                            ),
+                      );
+                      if (picked != null && context.mounted) {
+                        setState(() {
+                          _customDateRange = picked;
+                          _selectedDateRange = value;
+                        });
+                        ref.read(receiptProvider.notifier).setDateFilter(
+                          picked.start,
+                          DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59),
+                        );
+                      }
+                    } else {
+                      setState(() => _selectedDateRange = value);
+                      _applyDateFilter(value);
+                    }
+                  },
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  String _dateRangeLabel(_DateRange range) {
-    switch (range) {
-      case _DateRange.all: return 'All Time';
-      case _DateRange.today: return 'Today';
-      case _DateRange.week: return 'This Week';
-      case _DateRange.month: return 'This Month';
-    }
   }
 
   void _applyDateFilter(_DateRange range) {
@@ -177,6 +214,8 @@ class _ReceiptsScreenState extends ConsumerState<ReceiptsScreen> {
         start = DateTime(now.year, now.month, 1);
         end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
         break;
+      case _DateRange.custom:
+        return;
     }
 
     ref.read(receiptProvider.notifier).setDateFilter(start, end);
