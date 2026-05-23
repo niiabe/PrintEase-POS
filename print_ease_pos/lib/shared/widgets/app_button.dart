@@ -29,11 +29,14 @@ class AppButton extends StatelessWidget {
   }
 
   Widget _buildButton(BuildContext context) {
+    final loaderColor = variant == ButtonVariant.primary
+        ? Colors.white
+        : Theme.of(context).colorScheme.primary;
     final child = isLoading
-        ? const SizedBox(
+        ? SizedBox(
             height: 20,
             width: 20,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            child: CircularProgressIndicator(strokeWidth: 2, color: loaderColor),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,

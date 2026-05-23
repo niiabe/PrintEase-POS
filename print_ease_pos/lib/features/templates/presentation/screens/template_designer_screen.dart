@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_loader.dart';
 import '../../../../shared/widgets/app_error_view.dart';
@@ -20,6 +21,8 @@ class TemplateDesignerScreen extends ConsumerStatefulWidget {
 }
 
 class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen> {
+  bool _hasChanges = false;
+
   @override
   void initState() {
     super.initState();
@@ -38,15 +41,23 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
     final state = ref.watch(templateProvider);
     final template = state.editingTemplate;
 
-    final saveable = template != null && template.name.isNotEmpty;
+    final canSave = template != null && template.name.isNotEmpty;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(template?.name ?? 'Design Template'),
-        actions: [
-          if (saveable)
+    return PopScope(
+      canPop: !_hasChanges,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop || !_hasChanges) return;
+        final shouldPop = await _confirmDiscard();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(template?.name ?? 'Design Template'),
+          actions: [
             TextButton.icon(
-              onPressed: state.isSaving ? null : _save,
+              onPressed: state.isSaving || !canSave ? null : _save,
               icon: state.isSaving
                   ? const SizedBox(
                       width: 16, height: 16,
@@ -55,24 +66,55 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
                   : const Icon(Icons.check),
               label: const Text('Save'),
             ),
-        ],
+          ],
+        ),
+        body: state.isLoading
+            ? const AppLoader()
+            : state.error != null
+                ? AppErrorView(
+                    message: state.error!,
+                    onRetry: () => widget.templateId != null
+                        ? ref.read(templateProvider.notifier).startEditTemplate(widget.templateId!)
+                        : ref.read(templateProvider.notifier).startNewTemplate(),
+                  )
+                : template == null
+                    ? const AppErrorView(message: 'Could not create template')
+                    : _buildDesigner(template),
       ),
-      body: state.isLoading
-          ? const AppLoader()
-          : state.error != null
-              ? AppErrorView(
-                  message: state.error!,
-                  onRetry: () => widget.templateId != null
-                      ? ref.read(templateProvider.notifier).startEditTemplate(widget.templateId!)
-                      : ref.read(templateProvider.notifier).startNewTemplate(),
-                )
-              : template == null
-                  ? const AppErrorView(message: 'Could not create template')
-                  : _buildDesigner(template),
     );
   }
 
+  Future<bool> _confirmDiscard() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text('You have unsaved changes. Do you want to discard them?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   Widget _buildDesigner(ReceiptTemplate template) {
+    final currentState = ref.watch(templateProvider);
+    final notifier = ref.read(templateProvider.notifier);
+    final canSave = template.name.isNotEmpty;
+
+    void onChanged(VoidCallback update) {
+      setState(() => _hasChanges = true);
+      update();
+    }
+
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
@@ -88,7 +130,7 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
               label: 'Template Name',
               value: template.name,
               hint: 'e.g. Shop Receipt',
-              onChanged: (v) => ref.read(templateProvider.notifier).updateName(v),
+              onChanged: (v) => onChanged(() => notifier.updateName(v)),
             ),
           ],
         ),
@@ -101,14 +143,14 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
               label: 'Store Name',
               value: template.storeName,
               hint: 'Your store name',
-              onChanged: (v) => ref.read(templateProvider.notifier).updateStoreName(v),
+              onChanged: (v) => onChanged(() => notifier.updateStoreName(v)),
             ),
             const SizedBox(height: AppSpacing.sm),
             TextSetting(
               label: 'Phone Number',
               value: template.storePhone,
               hint: '+233 000 000 000',
-              onChanged: (v) => ref.read(templateProvider.notifier).updateStorePhone(v),
+              onChanged: (v) => onChanged(() => notifier.updateStorePhone(v)),
             ),
           ],
         ),
@@ -122,7 +164,7 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
               value: template.header,
               hint: 'Receipt header',
               maxLines: 2,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateHeader(v),
+              onChanged: (v) => onChanged(() => notifier.updateHeader(v)),
             ),
             const SizedBox(height: AppSpacing.sm),
             TextSetting(
@@ -130,7 +172,7 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
               value: template.footer,
               hint: 'Thank you message',
               maxLines: 2,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateFooter(v),
+              onChanged: (v) => onChanged(() => notifier.updateFooter(v)),
             ),
           ],
         ),
@@ -141,7 +183,7 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
           children: [
             LogoPickerWidget(
               currentPath: template.logoPath,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateLogoPath(v),
+              onChanged: (v) => onChanged(() => notifier.updateLogoPath(v)),
             ),
           ],
         ),
@@ -152,15 +194,15 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
           children: [
             PaperSizeSelector(
               value: template.paperWidth,
-              onChanged: (v) => ref.read(templateProvider.notifier).updatePaperWidth(v),
+              onChanged: (v) => onChanged(() => notifier.updatePaperWidth(v)),
             ),
             const SizedBox(height: AppSpacing.sm),
             AlignmentSelector(
               label: 'Alignment',
               isLeft: template.alignment == ReceiptAlignment.left,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateAlignment(
+              onChanged: (v) => onChanged(() => notifier.updateAlignment(
                     v ? ReceiptAlignment.left : ReceiptAlignment.center,
-                  ),
+                  )),
             ),
             const SizedBox(height: AppSpacing.sm),
             SliderSetting(
@@ -170,7 +212,7 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
               max: 1.6,
               divisions: 10,
               displayValue: '${template.fontSize.toStringAsFixed(1)}x',
-              onChanged: (v) => ref.read(templateProvider.notifier).updateFontSize(v),
+              onChanged: (v) => onChanged(() => notifier.updateFontSize(v)),
             ),
             SliderSetting(
               label: 'Spacing',
@@ -179,7 +221,7 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
               max: 2.0,
               divisions: 15,
               displayValue: '${template.spacing.toStringAsFixed(1)}x',
-              onChanged: (v) => ref.read(templateProvider.notifier).updateSpacing(v),
+              onChanged: (v) => onChanged(() => notifier.updateSpacing(v)),
             ),
           ],
         ),
@@ -191,25 +233,32 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
             ToggleSetting(
               label: 'Show Logo',
               value: template.showLogo,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateShowLogo(v),
+              onChanged: (v) => onChanged(() => notifier.updateShowLogo(v)),
             ),
             ToggleSetting(
               label: 'Show QR Code',
               value: template.showQrCode,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateShowQrCode(v),
+              onChanged: (v) => onChanged(() => notifier.updateShowQrCode(v)),
             ),
             ToggleSetting(
               label: 'Show Divider',
               value: template.showDivider,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateShowDivider(v),
+              onChanged: (v) => onChanged(() => notifier.updateShowDivider(v)),
             ),
             ToggleSetting(
               label: 'Show Itemized List',
               value: template.showItemizedList,
-              onChanged: (v) => ref.read(templateProvider.notifier).updateShowItemizedList(v),
+              onChanged: (v) => onChanged(() => notifier.updateShowItemizedList(v)),
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.md),
+        AppButton(
+          label: currentState.isSaving ? 'Saving...' : 'Save Template',
+          icon: Icons.save,
+          onPressed: currentState.isSaving || !canSave ? null : _save,
+        ),
+        const SizedBox(height: AppSpacing.xl),
       ],
     );
   }
@@ -230,6 +279,9 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
     final navigator = Navigator.of(context);
     final notifier = ref.read(templateProvider.notifier);
     await notifier.saveTemplate();
-    navigator.pop();
+    if (mounted) {
+      setState(() => _hasChanges = false);
+      navigator.pop();
+    }
   }
 }

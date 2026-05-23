@@ -1,3 +1,4 @@
+import '../../../../core/services/bluetooth_platform_service.dart';
 import '../datasources/printer_datasource.dart';
 import '../datasources/printer_preferences_service.dart';
 import '../models/printer_device.dart';
@@ -5,15 +6,21 @@ import '../models/printer_device.dart';
 class PrinterRepository {
   final PrinterDatasource _datasource;
   final PrinterPreferencesService _preferences;
+  final BluetoothPlatformService _bluetoothService;
 
   PrinterDevice? _connectedDevice;
 
-  PrinterRepository(this._datasource, this._preferences);
+  PrinterRepository(this._datasource, this._preferences, this._bluetoothService);
 
   PrinterDevice? get connectedDevice => _connectedDevice;
 
   Future<List<PrinterDevice>> scanDevices() async {
-    return _datasource.scanDevices();
+    try {
+      return await _datasource.scanDevices();
+    } on BluetoothOffException {
+      await _bluetoothService.requestBluetoothEnable();
+      return _datasource.scanDevices();
+    }
   }
 
   Future<bool> connect(PrinterDevice device) async {

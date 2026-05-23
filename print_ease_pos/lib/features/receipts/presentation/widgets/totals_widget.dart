@@ -4,12 +4,10 @@ import '../../data/models/receipt.dart';
 
 class TotalsWidget extends StatelessWidget {
   final Receipt receipt;
-  final String currency;
 
   const TotalsWidget({
     super.key,
     required this.receipt,
-    this.currency = 'GHS',
   });
 
   @override
@@ -19,7 +17,7 @@ class TotalsWidget extends StatelessWidget {
         const Divider(),
         _buildRow(context, 'Subtotal', receipt.subtotal),
         const SizedBox(height: AppSpacing.xs),
-        _buildRow(context, 'Tax (12.5%)', receipt.tax),
+        _buildRow(context, 'Tax', receipt.tax),
         const Divider(thickness: 2),
         _buildRow(context, 'Total', receipt.total, isBold: true),
       ],
@@ -38,7 +36,7 @@ class TotalsWidget extends StatelessWidget {
           ),
         ),
         Text(
-          '$currency ${amount.toStringAsFixed(2)}',
+          '${receipt.currency} ${amount.toStringAsFixed(2)}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
           ),

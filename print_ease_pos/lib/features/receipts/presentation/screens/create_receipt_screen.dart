@@ -160,7 +160,7 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           AppCard(
-            child: TotalsWidget(receipt: draft, currency: draft.currency),
+            child: TotalsWidget(receipt: draft),
           ),
           const SizedBox(height: AppSpacing.md),
           AppInput(

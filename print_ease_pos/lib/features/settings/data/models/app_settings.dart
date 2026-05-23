@@ -19,7 +19,7 @@ class AppSettings {
     this.currency = 'GHS',
     this.storeName = 'My Store',
     this.storePhone = '',
-    this.taxPercentage = 12.5,
+    this.taxPercentage = 0,
     this.defaultTemplateId,
     this.autoConnectPrinter = false,
     this.saveReceiptsAutomatically = true,
@@ -36,7 +36,7 @@ class AppSettings {
       currency: map['currency'] as String? ?? 'GHS',
       storeName: map['storeName'] as String? ?? 'My Store',
       storePhone: map['storePhone'] as String? ?? '',
-      taxPercentage: (map['taxPercentage'] as num?)?.toDouble() ?? 12.5,
+      taxPercentage: (map['taxPercentage'] as num?)?.toDouble() ?? 0,
       defaultTemplateId: map['defaultTemplateId'] as int?,
       autoConnectPrinter: map['autoConnectPrinter'] as bool? ?? false,
       saveReceiptsAutomatically:

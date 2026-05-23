@@ -46,7 +46,7 @@ class PrintPreviewWidget extends StatelessWidget {
           ...receipt.items.map((item) => _buildItemRow(context, item)),
           const Divider(color: Colors.black12, thickness: 1),
           _buildTotalRow('Subtotal', receipt.subtotal),
-          _buildTotalRow('Tax (12.5%)', receipt.tax),
+          _buildTotalRow('Tax', receipt.tax),
           const Divider(color: Colors.black87, thickness: 2),
           _buildTotalRow('TOTAL', receipt.total, isBold: true),
           const SizedBox(height: AppSpacing.sm),

@@ -6,8 +6,9 @@ import '../../../receipts/data/models/receipt_item.dart';
 
 class PdfFormatter {
   final int paperWidth;
+  final double taxPercentage;
 
-  PdfFormatter({this.paperWidth = 80});
+  PdfFormatter({this.paperWidth = 80, this.taxPercentage = 0});
 
   PdfPageFormat get _pageFormat {
     final w = paperWidth * PdfPageFormat.mm;
@@ -147,7 +148,7 @@ class PdfFormatter {
     return pw.Column(
       children: [
         _totalRow('Subtotal', receipt.subtotal, ''),
-        _totalRow('Tax (12.5%)', receipt.tax, ''),
+        _totalRow('Tax (${taxPercentage.toStringAsFixed(1)}%)', receipt.tax, ''),
         pw.SizedBox(height: 2),
         _totalRow('TOTAL', receipt.total, receipt.currency, bold: true),
       ],

@@ -4,8 +4,9 @@ import '../../../receipts/data/models/receipt_item.dart';
 
 class EscPosFormatter {
   final int paperWidth;
+  final double taxPercentage;
 
-  EscPosFormatter({this.paperWidth = 80});
+  EscPosFormatter({this.paperWidth = 80, this.taxPercentage = 0});
 
   PaperSize get _paperSize =>
       paperWidth == 58 ? PaperSize.mm58 : PaperSize.mm80;
@@ -107,7 +108,7 @@ class EscPosFormatter {
       ),
     ]);
     bytes += gen.row([
-      PosColumn(text: 'Tax (12.5%)', width: 8),
+      PosColumn(text: 'Tax (${taxPercentage.toStringAsFixed(1)}%)', width: 8),
       PosColumn(
         text: receipt.tax.toStringAsFixed(2),
         width: 4,

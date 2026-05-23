@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/services/bluetooth_platform_service.dart';
 import '../../data/datasources/printer_datasource.dart';
 import '../../data/datasources/printer_preferences_service.dart';
 import '../../data/models/printer_device.dart';
@@ -177,6 +178,10 @@ class PrinterNotifier extends StateNotifier<PrinterState> {
   }
 }
 
+final bluetoothPlatformServiceProvider = Provider<BluetoothPlatformService>((ref) {
+  return BluetoothPlatformService();
+});
+
 final printerDatasourceProvider = Provider<PrinterDatasource>((ref) {
   return PrinterDatasource();
 });
@@ -189,7 +194,8 @@ final printerPreferencesServiceProvider =
 final printerRepositoryProvider = Provider<PrinterRepository>((ref) {
   final datasource = ref.watch(printerDatasourceProvider);
   final preferences = ref.watch(printerPreferencesServiceProvider);
-  return PrinterRepository(datasource, preferences);
+  final bluetoothService = ref.watch(bluetoothPlatformServiceProvider);
+  return PrinterRepository(datasource, preferences, bluetoothService);
 });
 
 final printerProvider =

@@ -84,6 +84,7 @@ final thermalPrintServiceProvider = Provider<ThermalPrintService>((ref) {
   return ThermalPrintService(
     ref.watch(printerDatasourceProvider),
     paperWidth: settings.defaultPaperWidth.toInt(),
+    taxPercentage: settings.taxPercentage,
   );
 });
 

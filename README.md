@@ -2,7 +2,7 @@
 
 > Thermal receipt printing made easy. A lightweight, offline-first Flutter POS app for Bluetooth thermal printers.
 
-PrintEase POS is a production-ready Flutter application that connects to Bluetooth/Wi-Fi thermal printers using ESC/POS protocol. It allows users to design receipt layouts, create and manage receipts, export as PDF, and print directly to POS printers — all without an internet connection or user account.
+PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF, and print directly — no internet or account required.
 
 ---
 
@@ -10,60 +10,65 @@ PrintEase POS is a production-ready Flutter application that connects to Bluetoo
 
 ### Printer Management
 - Bluetooth printer scanning & discovery
-- Connect/disconnect with auto-reconnect support
+- Connect/disconnect with auto-reconnect
 - Preferred printer persistence
-- ESC/POS protocol compatibility
 - 58mm and 80mm paper size support
 - Test print functionality
-- Bluetooth state detection & user-friendly enable prompts
+- Bluetooth state detection with native enable request (ACTION_REQUEST_ENABLE)
 
-### Receipt Creation & Management
-- Create receipts with auto-generated receipt numbers (`RCP-YYYYMM-NNNN`)
-- Add/edit/remove receipt items dynamically
-- Automatic subtotal, tax (configurable), and total calculation
-- Customer name, store name, and notes support
-- Receipt history with search & filter (by date, print status, receipt number)
+### Receipt Creation & History
+- Auto-generated receipt numbers (`RCP-YYYYMM-NNNN`)
+- Dynamic add/edit/remove receipt items
+- Configurable tax percentage (from settings)
+- Customer name, store name, and notes
+- Search by receipt number, filter by date & print status
 - Swipe-to-delete with confirmation
-- Receipt detail view with all information
 
-### Receipt Designer & Templates
-- Visual template editor with live preview
-- Multiple template support (Shop Receipt, Restaurant Receipt, Invoice, Delivery Slip)
+### Receipt Template Designer
+- Visual editor with live preview
+- Multiple preset templates (Shop, Restaurant, Invoice, Delivery Slip)
 - Customizable: store name, phone, header, footer, logo upload
-- Paper size selection (58mm / 80mm)
-- Font size, alignment (left/center), and spacing controls
-- Visibility toggles for logo, QR code, dividers, itemized list
-- Templates persisted locally via SQLite
+- Font size, alignment (left/center), spacing controls
+- Toggle visibility for logo, QR code, dividers, itemized list
 
 ### Thermal Printing
-- ESC/POS command generation for receipt data
+- Full ESC/POS command generation
 - Direct printing to connected Bluetooth printer
 - Print status tracking (not printed / printed / failed)
-- Reprint support from receipt history
-- Print preview widget
+- Reprint from receipt history
 - Paper size-aware formatting
+- Configurable tax rate shown on printed receipt
 
 ### PDF Export
 - Generate thermal-style PDF receipts
-- Save PDFs to device storage
-- Share PDFs via system share sheet
-- Print PDFs via system print dialog
-- PDF history with list view and preview
-- One-tap download button on receipt detail & history
+- Save, share, print PDFs via system dialogs
+- PDF history with preview and management
 
-### Settings
+### Settings & Data
 - Dark/Light theme toggle (persisted)
-- Store information (name, phone, currency, tax %)
-- Printer settings (auto-connect, print density, character size, line spacing)
-- Paper width selection (58mm / 80mm)
-- Auto-save and auto-print toggles
-- Default template selection
+- Store info (name, phone, currency, configurable tax %)
+- Printer settings (paper width, print density, character size, line spacing)
+- Auto-connect, auto-save, auto-print toggles
+- Full backup & restore (database + settings + templates)
 
-### Backup & Restore
-- Full backup (database + settings + templates)
-- Restore from backup folder
-- Granular restore options
-- Timestamped backup folders
+---
+
+## Branding & Icons
+
+PrintEase POS uses custom branded icons across all platforms:
+
+| Platform | Icon Location |
+|---|---|
+| **Android Launcher** | `android/app/src/main/res/mipmap-*dpi/ic_launcher.png` |
+| **Android Adaptive** | `mipmap-anydpi-v26/ic_launcher.xml` (API 26+) |
+| **Android Splash** | `launch_background.xml` with centered icon |
+| **iOS App Store** | `ios/Runner/Assets.xcassets/AppIcon.appiconset/` (15 sizes) |
+| **Flutter Asset** | `assets/images/app_icon.png`, `assets/images/logo.svg` |
+
+Source icons available in `app_icons/`:
+- `Android/` — 48/72/96/144/192px PNGs
+- `iOS/` — 20×20 through 1024×1024 PNGs
+- `Source/PrintEasePOS_1024.png` — master 1024×1024 source
 
 ---
 
@@ -72,14 +77,14 @@ PrintEase POS is a production-ready Flutter application that connects to Bluetoo
 | Screen | Description |
 |---|---|
 | **Printer** | Connection status, scan devices, test print, paper size selector |
-| **Receipts** | Receipt list with search, filters, swipe actions, download PDF |
+| **Receipts** | List with search, status & date filters, swipe delete, PDF download |
 | **Create Receipt** | Form with dynamic items, auto-calculated totals, save |
-| **Receipt Detail** | Full receipt view, print, download PDF, delete |
-| **Templates** | Template list with swipe-to-delete, tap to edit |
-| **Template Designer** | Live preview + all customization settings |
-| **Settings** | Appearance, store info, printer, receipt, data management |
-| **Backup & Restore** | Export/import app data |
-| **PDF Export** | List of exported PDFs with preview, share, print, delete |
+| **Receipt Detail** | Full view with print/reprint, download PDF, delete |
+| **Templates** | Template list with swipe delete, tap to edit |
+| **Template Designer** | Live preview + all customization settings + logo picker |
+| **Settings** | Appearance, store info, printer, receipt defaults, backup/restore |
+| **Backup & Restore** | Export/import app data to/from device storage |
+| **PDF Exports** | List of exported PDFs with preview, share, print, delete |
 
 ---
 
@@ -87,17 +92,17 @@ PrintEase POS is a production-ready Flutter application that connects to Bluetoo
 
 | Layer | Technology |
 |---|---|
-| **Framework** | Flutter (SDK ^3.11.5) |
-| **State Management** | Riverpod (`flutter_riverpod`) |
-| **Routing** | `go_router` with ShellRoute (bottom navigation) |
-| **Database** | SQLite (`sqflite`) with migration support |
-| **Preferences** | `shared_preferences` |
-| **Bluetooth Printing** | `print_bluetooth_thermal` + `esc_pos_utils_plus` |
-| **PDF Generation** | `pdf` + `printing` |
-| **Image Picking** | `image_picker` |
-| **File Picking** | `file_picker` |
+| **Framework** | Flutter (SDK ^3.11.5, upgraded to 3.44.0 / Dart 3.12.0) |
+| **State Management** | Riverpod (`flutter_riverpod` + `StateNotifier`) |
+| **Routing** | `go_router` with `ShellRoute` (persistent bottom nav) |
+| **Database** | SQLite (`sqflite`) — tables: `receipts`, `receipt_items`, `templates` |
+| **Preferences** | `shared_preferences` (JSON-encoded settings) |
+| **Bluetooth** | `print_bluetooth_thermal` + `esc_pos_utils_plus` |
+| **PDF** | `pdf` + `printing` |
+| **Image Picker** | `image_picker` (for store logos in templates) |
+| **File Picker** | `file_picker` (for backup restore) |
 | **Formatting** | `intl` |
-| **Architecture** | Feature-Based Clean Architecture |
+| **Architecture** | Feature-based with data/presentation layers |
 
 ---
 
@@ -105,57 +110,44 @@ PrintEase POS is a production-ready Flutter application that connects to Bluetoo
 
 ```
 PrintEase-POS/
-├── .flows/                          # Step-by-step development flow files
-├── skills/                          # OpenCode AI skill definitions (root level)
-├── 00requirement.txt                # Initial app requirements & specification
-├── setup.txt                        # Project setup instructions
-├── print_ease_pos/                  # Flutter application source
+├── app_icons/                        # Source icons (Android/iOS/Source)
+│   ├── Android/                      # 48-192px PNGs per density
+│   ├── iOS/                          # AppIcon set (20-1024px)
+│   └── Source/                       # Master 1024×1024 PNG
+├── PrintEasePOS_AppIcon.png          # Root 1024×1024 app icon
+├── PrintEasePOS_AppIcon.svg          # Vector app icon source
+├── PrintEasePOS_Logo.svg             # Vector logo source
+├── print_ease_pos/                   # Flutter application root
 │   ├── lib/
-│   │   ├── main.dart                # App entry point, ProviderScope
-│   │   ├── app.dart                 # MaterialApp.router with theme + router
-│   │   ├── core/                    # Constants, theme, utils
-│   │   ├── routes/                  # go_router configuration
-│   │   ├── shared/                  # Reusable widgets, dialogs, layouts
-│   │   └── features/                # Feature modules
-│   │       ├── printer/             # Bluetooth printer (scan, connect, print)
-│   │       ├── receipts/            # Receipt CRUD, creation, history
-│   │       ├── templates/           # Receipt template designer
-│   │       ├── settings/            # App settings, backup & restore
-│   │       └── pdf_export/          # PDF generation, storage, sharing
-│   ├── test/
-│   ├── android/
-│   ├── ios/
-│   ├── web/
-│   ├── linux/
-│   ├── macos/
-│   └── windows/
+│   │   ├── main.dart                 # Entry point + ProviderScope
+│   │   ├── app.dart                  # MaterialApp.router + theme
+│   │   ├── core/                     # Constants, theme, utils
+│   │   ├── routes/                   # GoRouter config (ShellRoute)
+│   │   ├── shared/                   # Reusable widgets, dialogs, layouts
+│   │   └── features/                 # Feature modules
+│   │       ├── printer/              # Bluetooth scan, connect, print
+│   │       ├── receipts/             # CRUD, creation, history
+│   │       ├── templates/            # Template designer & preview
+│   │       ├── settings/             # Settings + backup/restore
+│   │       └── pdf_export/           # PDF generation & management
+│   ├── assets/images/                # Bundled app icon & logo
+│   └── android/ios/web/              # Platform configs
 ```
 
-### Feature Architecture (inside `lib/features/`)
-
-Each feature follows a **data/presentation** clean architecture pattern:
+### Feature Module Structure
 
 ```
 feature/
 ├── data/
-│   ├── models/          # Data classes with fromMap/toMap serialization
-│   ├── datasources/     # Raw data access (SQLite, SharedPreferences, Bluetooth, File System)
-│   ├── services/        # Business logic operations
-│   └── repositories/    # Abstraction layer wrapping datasources
+│   ├── models/           # Data classes with fromMap/toMap
+│   ├── datasources/      # Raw data access (SQLite, SharedPrefs, Bluetooth)
+│   ├── services/         # Business logic (ESC/POS, PDF, Backup)
+│   └── repositories/     # Coordination layer
 └── presentation/
-    ├── controllers/     # Riverpod StateNotifier providers
-    ├── screens/         # Full-screen pages
-    └── widgets/         # Feature-specific reusable components
+    ├── controllers/      # Riverpod StateNotifier providers
+    ├── screens/          # Full pages
+    └── widgets/          # Feature components
 ```
-
----
-
-## Database
-
-- **Engine:** SQLite via `sqflite` (version 2)
-- **Tables:** `receipts`, `receipt_items`, `templates`
-- **Migration:** v1 → v2 adds templates table
-- **Settings:** `SharedPreferences` (JSON encoded)
 
 ---
 
@@ -163,66 +155,79 @@ feature/
 
 ### Prerequisites
 
-- Flutter SDK ^3.11.5
-- Android device/emulator (Bluetooth required for printing)
-- A Bluetooth ESC/POS thermal printer (optional for development)
+- Flutter SDK ^3.11.5 (latest stable recommended)
+- Android device (Bluetooth required for printing)
+- Bluetooth ESC/POS thermal printer (optional)
 
-### Installation
+### Run on Device
 
 ```bash
-# Clone the repository
-git clone https://github.com/niiabe/PrintEase-POS.git
-cd PrintEase-POS/print_ease_pos
+cd print_ease_pos
 
 # Install dependencies
 flutter pub get
 
-# Run the app
+# Run on connected device
 flutter run
+
+# Or build APK and install manually
+flutter build apk --debug
+# APK location: build/app/outputs/flutter-apk/app-debug.apk
 ```
 
-### Generate a Release APK
+### Build Release APK
 
 ```bash
-cd print_ease_pos
 flutter build apk --release
+# For split APKs (per architecture):
+flutter build apk --split-per-abi
 ```
+
+**Important:** Before building a release APK, configure signing in `android/app/build.gradle.kts`. By default, the release build uses debug signing keys.
+
+---
+
+## Configuration Notes
+
+### Android
+- **Min SDK:** Flutter default (typically 21+)
+- **Permissions:** BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION (Android 12+)
+- **App Icons:** Custom PrintEasePOS icons across all densities + adaptive icon support (API 26+)
+
+### App Icon Files
+
+| Density | Size | Source |
+|---|---|---|
+| mdpi | 48×48 | `app_icons/Android/icon-48.png` |
+| hdpi | 72×72 | `app_icons/Android/icon-72.png` |
+| xhdpi | 96×96 | `app_icons/Android/icon-96.png` |
+| xxhdpi | 144×144 | `app_icons/Android/icon-144.png` |
+| xxxhdpi | 192×192 | `app_icons/Android/icon-192.png` |
 
 ---
 
 ## Development
 
-This project was built using [OpenCode AI](https://opencode.ai) with specialized AI skills:
+Built with [OpenCode AI](https://opencode.ai):
 
 | Skill | Purpose |
 |---|---|
-| **flutter-master-architect** | Project foundation, architecture, theme, routing |
+| **flutter-master-architect** | Foundation, architecture, theme, routing |
 | **flutter-feature-builder** | Feature-by-feature implementation |
-| **flutter-expert-builder** | General Flutter best practices |
-| **flutter-thermal-pos** | Specialized POS domain knowledge (ESC/POS, receipt layout, thermal printing) |
+| **flutter-thermal-pos** | ESC/POS, receipt layout, thermal printing |
 
-Skills are defined under both the root `skills/` directory and `print_ease_pos/.opencode/skills/`.
+---
 
-### Development Order
+## Known Limitations
 
-1. Project Setup & Architecture
-2. Routing & Navigation
-3. Printer Connection (Bluetooth scanning, connect, disconnect)
-4. Receipt UI & Creation
-5. Local Database (SQLite)
-6. Thermal Printing Service (ESC/POS)
-7. PDF Export
-8. Receipt Designer & Templates
-9. Receipt History & Management
-10. Settings & Backup/Restore
-11. Production Optimization & Release
+- Tax percentage in settings updates the display label, but receipt totals are calculated at creation time using the tax % from that moment
+- Bluetooth only (no USB/Wi-Fi printer support)
+- Offline-only (no cloud sync)
+- `dart:io` imports make web deployment unsupported
+- Print status requires manual refresh after printing
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
-
----
-
-*Built with Flutter + OpenCode AI*
+MIT License

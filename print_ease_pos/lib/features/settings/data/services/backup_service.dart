@@ -36,7 +36,7 @@ class BackupService {
         await File('${backupDir.path}/settings.json').writeAsString(settingsJson);
       }
 
-      _exportTemplates(backupDir);
+      await _exportTemplates(backupDir);
 
       final resultDir = backupDir.path;
       return BackupResult(
@@ -74,7 +74,7 @@ class BackupService {
 
       await _importDatabase(backupDir);
       await _importSettings(backupDir);
-      _importTemplates(backupDir);
+      await _importTemplates(backupDir);
 
       return const BackupResult(
         success: true,

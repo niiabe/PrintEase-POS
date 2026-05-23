@@ -65,16 +65,15 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
 
     return Column(
       children: [
-        Expanded(child: _buildPreview(state.pdfBytes!)),
+        Expanded(child: _buildPreview(state, state.pdfBytes!)),
         _buildActions(doc.id!),
       ],
     );
   }
 
-  Widget _buildPreview(Uint8List bytes) {
-    final state = ref.watch(pdfProvider);
-    final fileName = state.selectedDocument?.fileName ?? 'document';
-    final fileSizeKb = state.selectedDocument?.fileSizeKb ?? 0;
+  Widget _buildPreview(PdfState pdfState, Uint8List bytes) {
+    final fileName = pdfState.selectedDocument?.fileName ?? 'document';
+    final fileSizeKb = pdfState.selectedDocument?.fileSizeKb ?? 0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.md),

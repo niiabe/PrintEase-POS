@@ -101,7 +101,7 @@ class SliderSetting extends StatelessWidget {
   }
 }
 
-class TextSetting extends StatelessWidget {
+class TextSetting extends StatefulWidget {
   final String label;
   final String value;
   final String? hint;
@@ -118,21 +118,48 @@ class TextSetting extends StatelessWidget {
   });
 
   @override
+  State<TextSetting> createState() => _TextSettingState();
+}
+
+class _TextSettingState extends State<TextSetting> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(TextSetting oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value && widget.value != _controller.text) {
+      _controller.text = widget.value;
+      _controller.selection = TextSelection.collapsed(offset: widget.value.length);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(widget.label, style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: AppSpacing.xs),
         TextField(
-          controller: TextEditingController(text: value)
-            ..selection = TextSelection.collapsed(offset: value.length),
+          controller: _controller,
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: widget.hint,
             isDense: true,
           ),
-          maxLines: maxLines,
-          onChanged: onChanged,
+          maxLines: widget.maxLines,
+          onChanged: widget.onChanged,
         ),
       ],
     );

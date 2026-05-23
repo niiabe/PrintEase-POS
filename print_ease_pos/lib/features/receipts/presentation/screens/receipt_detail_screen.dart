@@ -238,7 +238,7 @@ class _ReceiptItemsCard extends StatelessWidget {
           const Divider(height: AppSpacing.lg),
           _totalRow(theme, 'Subtotal', receipt.subtotal, receipt.currency),
           const SizedBox(height: AppSpacing.xs),
-          _totalRow(theme, 'Tax (12.5%)', receipt.tax, receipt.currency),
+          _totalRow(theme, 'Tax', receipt.tax, receipt.currency),
           const Divider(height: AppSpacing.md),
           _totalRow(theme, 'Total', receipt.total, receipt.currency, isTotal: true),
         ],

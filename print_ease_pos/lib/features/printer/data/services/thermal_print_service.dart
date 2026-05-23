@@ -5,9 +5,11 @@ import '../../../receipts/data/models/receipt.dart';
 class ThermalPrintService {
   final PrinterDatasource _datasource;
   final int _paperWidth;
+  final double _taxPercentage;
 
-  ThermalPrintService(this._datasource, {int paperWidth = 80})
-      : _paperWidth = paperWidth;
+  ThermalPrintService(this._datasource, {int paperWidth = 80, double taxPercentage = 0})
+      : _paperWidth = paperWidth,
+        _taxPercentage = taxPercentage;
 
   Future<PrintResult> printReceipt(Receipt receipt) async {
     final isConnected = await _datasource.isConnected();
@@ -16,7 +18,7 @@ class ThermalPrintService {
     }
 
     try {
-      final formatter = EscPosFormatter(paperWidth: _paperWidth);
+      final formatter = EscPosFormatter(paperWidth: _paperWidth, taxPercentage: _taxPercentage);
       final bytes = await formatter.formatReceipt(receipt);
       final success = await _datasource.printBytes(bytes);
 

@@ -92,7 +92,7 @@ class TemplatePreview extends StatelessWidget {
           SizedBox(height: spacing),
           _totalsPreview('Subtotal', '32.50', fontSize),
           SizedBox(height: spacing * 0.5),
-          _totalsPreview('Tax (12.5%)', '4.06', fontSize),
+          _totalsPreview('Tax', '0.00', fontSize),
           SizedBox(height: spacing * 0.5),
           Text(
             'GHS 36.56',

@@ -137,7 +137,7 @@ final pdfStorageServiceProvider = Provider<PdfStorageService>((ref) {
 
 final pdfFormatterProvider = Provider<PdfFormatter>((ref) {
   final settings = ref.watch(settingsProvider);
-  return PdfFormatter(paperWidth: settings.defaultPaperWidth.toInt());
+  return PdfFormatter(paperWidth: settings.defaultPaperWidth.toInt(), taxPercentage: settings.taxPercentage);
 });
 
 final pdfRepositoryProvider = Provider<PdfRepository>((ref) {
