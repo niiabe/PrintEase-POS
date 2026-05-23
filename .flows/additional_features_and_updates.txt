@@ -1,0 +1,103 @@
+ADDITIONAL FEATURES & UPDATES
+==============================
+This file tracks every feature or update added beyond the original .flows/ scope.
+Update this file whenever a new feature is added or an existing one is modified.
+
+--- Feature: Default Tax 0% ---
+- Changed default tax percentage from 12.5% to 0%
+- Updated AppSettings constructor, fromMap, and all hardcoded 'Tax (12.5%)' labels to 'Tax'
+- Updated EscPosFormatter, PdfFormatter, ThermalPrintService defaults from 12.5 to 0
+- Files: app_settings.dart, esc_pos_formatter.dart, pdf_formatter.dart, thermal_print_service.dart
+
+--- Feature: Template Save Button & Unsaved-Changes Guard ---
+- Added always-visible Save button in AppBar (disabled when name empty)
+- Added bottom AppButton("Save Template")
+- Added PopScope unsaved-changes guard with confirmation dialog
+- Added _hasChanges dirty tracking that resets on save
+- Files: template_designer_screen.dart
+
+--- Feature: Default Template Seeding on First Install ---
+- On first install (templates table empty), inserts 4 preset templates: Shop, Restaurant, Invoice, Delivery Slip
+- Uses ReceiptTemplate.presetNames
+- Files: app.dart
+
+--- Feature: Template Selector in Settings ---
+- Added "Default Template" tile under new "Templates" section in Settings
+- Tap opens dialog listing all templates + "None" option
+- Calls updateDefaultTemplateId()
+- Files: settings_screen.dart
+
+--- Feature: Settings Save Button ---
+- Added AppButton("Save Settings") at bottom of settings form
+- Shows SnackBar confirmation on save
+- Files: settings_screen.dart
+
+--- Feature: PDF Save to Downloads ---
+- Added saveToDownloads() in PdfStorageService (copies file to getDownloadsDirectory())
+- Added downloadPdf() in PdfRepository
+- Added downloadDocument() + isDownloading state in PdfNotifier/PdfState
+- Added AppButton("Save to Downloads") in PdfActionButtons with SnackBar feedback
+- Files: pdf_storage_service.dart, pdf_repository.dart, pdf_provider.dart, pdf_action_buttons.dart
+
+--- Feature: Bluetooth Native Enable Request ---
+- Created BluetoothPlatformService (MethodChannel "com.example.print_ease_pos/bluetooth")
+- Modified MainActivity.kt to fire BluetoothAdapter.ACTION_REQUEST_ENABLE via startActivity(intent) with FLAG_ACTIVITY_NEW_TASK
+- PrinterRepository.scanDevices() catches BluetoothOffException, calls requestBluetoothEnable(), retries scan
+- Files: bluetooth_platform_service.dart, MainActivity.kt, printer_repository.dart
+
+--- Feature: Dashboard Home Screen ---
+- Created DashboardScreen as the new app landing page (replaces Printer tab)
+- Shows: today's receipt count + sales total, printer connection status, 4 quick-action buttons (New Receipt, Scan Printer, Templates, PDF Exports), recent receipts list (last 5)
+- Added to bottom nav as first tab (5 tabs total: Dashboard, Printer, Receipts, Templates, Settings)
+- Updated routes and app_shell.dart
+- Files: dashboard_screen.dart, app_shell.dart, app_router.dart, app_routes.dart
+
+--- Feature: Receipt Editing ---
+- CreateReceiptScreen accepts optional editReceiptId; pre-populates form when editing
+- Added updateReceipt() method to ReceiptNotifier (calls repository.updateReceipt)
+- Added startEditReceipt() to load existing receipt into draft
+- "Edit Receipt" button on ReceiptDetailScreen navigates to /receipts/:id/edit
+- Added edit route to GoRouter
+- Files: create_receipt_screen.dart, receipt_detail_screen.dart, receipt_provider.dart, app_router.dart, app_routes.dart
+
+--- Feature: Auto-Print After Receipt Creation ---
+- saveReceipt() now returns Future<int?> with new receipt ID
+- After save, checks settings.autoPrint; if enabled, calls PrintController.printReceipt()
+- Works for both new receipts and edited receipts
+- Files: receipt_provider.dart, create_receipt_screen.dart
+
+--- Feature: Native PDF Preview ---
+- Replaced broken Image.memory(bytes) (which can't render PDF byte data) with PdfPreview from the printing package
+- PDF now renders as a scrollable, zoomable document
+- Files: pdf_preview_screen.dart
+
+--- Fix: Hardcoded 12.5% Tax in Receipt Calculations ---
+- calculateTotals() now accepts taxPercentage parameter (default 0)
+- addItem, removeItem, updateItem forward taxPercentage through to calculation
+- Rates properly divide by 100 (e.g. 12.5 -> 0.125, 0 -> 0)
+- Files: receipt_repository.dart, receipt_provider.dart, create_receipt_screen.dart
+
+--- Feature: Bluetooth Scan Timeout & Cancel ---
+- Added 15-second scan timeout via Timer in PrinterNotifier
+- Auto-cancels and shows "Scan timed out" error
+- Added cancelScan() method and Cancel button next to spinner
+- Cancel button shown during scan alongside spinner
+- Files: printer_provider.dart, printer_scanner_widget.dart
+
+--- Feature: Receipts Page Dropdown Filters ---
+- Replaced horizontal FilterChips with Status dropdown (All, Not Printed, Printed, Failed)
+- Replaced ChoiceChips with Date dropdown (All Time, Today, This Week, This Month, Custom)
+- Custom opens native Material DateRangePicker calendar
+- Files: receipts_screen.dart
+
+--- Feature: Flutter Upgrade & Built-in Kotlin Migration ---
+- Upgraded Flutter from 3.41.9 to 3.44.0, Dart from 3.11.5 to 3.12.0
+- Removed Kotlin Gradle Plugin (KGP) from app-level build.gradle.kts and settings.gradle.kts
+- Third-party plugins still apply KGP (warnings remain but build passes)
+- Files: pubspec.yaml, android/app/build.gradle.kts, android/settings.gradle.kts
+
+--- Chore: Dead Code Cleanup ---
+- Removed unused flutter_screenutil dependency from pubspec.yaml
+- Removed unused route constants: home, printerConnect, printerTest from app_routes.dart
+- Changed initialLocation from AppRoutes.printer to AppRoutes.dashboard
+- Files: pubspec.yaml, app_routes.dart, app_router.dart
