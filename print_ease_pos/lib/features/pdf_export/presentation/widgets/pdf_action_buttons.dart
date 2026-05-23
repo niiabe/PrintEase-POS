@@ -64,7 +64,7 @@ class PdfActionButtons extends ConsumerWidget {
     if (path != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('PDF saved to Downloads'),
+          content: Text('PDF saved — check notification'),
           behavior: SnackBarBehavior.floating,
         ),
       );
