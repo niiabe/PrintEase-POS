@@ -133,15 +133,6 @@ Update this file whenever a new feature is added or an existing one is modified.
 - Converted SettingsScreen to ConsumerStatefulWidget, displaying dynamic, requestable tiles for Bluetooth, Notifications, and Media/Storage permissions
 - Files: MainActivity.kt, permission_service.dart, settings_screen.dart
 
---- Fix: Kotlin Version Upgrade (2.0.0 → 2.2.20) to Resolve Deprecation Warning ---
-- Added `org.jetbrains.kotlin.android` version `2.2.20` (apply false) to settings.gradle.kts plugins block
-- Added classpath dependency `kotlin-gradle-plugin:2.2.20` to build.gradle.kts buildscript
-- Set `android.builtInKotlin=false` in gradle.properties (explicit KGP management)
-- These overrides force Kotlin 2.2.20 for all third-party plugins that apply KGP (print_bluetooth_thermal 1.8.22, image_picker_android 2.3.20, shared_preferences_android 2.3.0)
-- Result: "Flutter support for your project's Kotlin version (2.0.0) will soon be dropped" warning is resolved
-- Remaining "plugins apply KGP" architectural warning is from third-party plugins themselves and can't be fixed by our project
-- Files: android/settings.gradle.kts, android/build.gradle.kts, android/gradle.properties
-
 --- Fix: MissingPluginException Safety (permission_service, bluetooth_platform_service) ---
 - Changed all `MissingPluginException` catch blocks from `return true` (assume granted) to `return false` (assume denied)
 - Affects all check* and request* methods in PermissionService and BluetoothPlatformService

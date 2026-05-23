@@ -2,7 +2,7 @@
 
 > Thermal receipt printing made easy. A lightweight, offline-first Flutter POS app for Bluetooth thermal printers.
 
-PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads and native preview), and print directly — no internet or account required. Features a dashboard, receipt editing, auto-print, scan timeout/cancel, audio permission, and a full App Permissions Center in Settings.
+PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads and native preview), and print directly — no internet or account required. Features a dashboard, receipt editing, auto-print, scan timeout/cancel, and a full App Permissions Center in Settings.
 
 ---
 
@@ -113,6 +113,7 @@ Source icons available in `app_icons/`:
 | **Image Picker** | `image_picker` (for store logos in templates) |
 | **File Picker** | `file_picker` (for backup restore) |
 | **Formatting** | `intl` |
+| **Permissions** | Custom MethodChannel + `permission_handler` |
 | **Architecture** | Feature-based with data/presentation layers |
 
 ---
@@ -203,7 +204,7 @@ flutter build apk --split-per-abi
 
 ### Android
 - **Min SDK:** Flutter default (typically 21+)
-- **Permissions:** BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION (maxSdkVersion=30), POST_NOTIFICATIONS, READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
+- **Permissions:** INTERNET, BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION (maxSdkVersion=30), POST_NOTIFICATIONS, READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, WRITE_EXTERNAL_STORAGE (maxSdkVersion=28), READ_EXTERNAL_STORAGE (maxSdkVersion=32)
 - **App Icons:** Custom PrintEasePOS icons across all densities + adaptive icon support (API 26+)
 
 ### App Icon Files
