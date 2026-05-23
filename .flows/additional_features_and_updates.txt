@@ -161,3 +161,4 @@ Update this file whenever a new feature is added or an existing one is modified.
 - Added getLocalPath() and getDocumentById() to PdfStorageService
 - Added INTERNET, maxSdkVersion constraints to legacy permissions in AndroidManifest.xml
 - Files: pubspec.yaml, AndroidManifest.xml, document_download_service.dart, pdf_provider.dart, pdf_action_buttons.dart, pdf_repository.dart, pdf_storage_service.dart
+- Known issue: flutter_file_downloader has compatibility issues on some Android devices; PDF may fail to copy to public Downloads

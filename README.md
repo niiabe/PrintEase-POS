@@ -240,7 +240,7 @@ Built with [OpenCode AI](https://opencode.ai):
 - Print status requires manual refresh after printing
 - 3rd-party plugins (`image_picker_android`, `print_bluetooth_thermal`, `shared_preferences_android`) still apply KGP directly instead of using Flutter's built-in Kotlin — non-fatal warning until plugin authors update
 - No domain layer in architecture (empty `domain/` directories) — data + presentation layers only
-- No unit or widget tests beyond the default smoke test
+- PDF "Save to Downloads" button may fail to copy to public Downloads — `flutter_file_downloader` package has known compatibility issues; fallback to app-internal storage works
 
 ---
 
