@@ -1,0 +1,4 @@
+# Node dependencies
+node_modules/
+print_ease_pos/.opencode/node_modules/
+print_ease_pos/.opencode/package-lock.json

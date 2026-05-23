@@ -1,0 +1,57 @@
+Use flutter-feature-builder.
+
+Build the receipt history and receipt management feature for PrintEasy POS.
+
+Requirements:
+
+- View all saved receipts
+- Search receipts
+- Filter receipts by:
+  - date
+  - print status
+  - receipt number
+- Reprint receipts
+- Delete receipts
+- View receipt details
+- Show receipt totals
+- Show print status
+- Infinite/lazy loading support
+- Offline-first support
+
+Use:
+- flutter_riverpod
+- sqflite
+- intl
+
+Generate in this order:
+
+1. receipt history repository updates
+2. search/filter datasource logic
+3. Riverpod history providers/controllers
+4. receipt history screen
+5. receipt detail screen
+6. receipt list item widgets
+7. filter/search widgets
+8. reprint action integration
+9. delete confirmation dialogs
+10. pagination/lazy loading support
+
+UI Requirements:
+
+- mobile-first POS layout
+- responsive design
+- loading/error/empty states
+- reusable list widgets
+- swipe actions for delete/reprint
+- optimized scrolling performance
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- Keep files under 300 lines
+- Split widgets properly
+- No database logic inside UI
+- Use reusable shared widgets
+- Generate production-ready code only
+- Explain folder placement
+- Do not regenerate existing files

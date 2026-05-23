@@ -1,0 +1,38 @@
+APP name : PrintEasy POS
+
+Use flutter-master-architect.
+
+Build the foundation for a production-ready Flutter thermal POS printer app called PrintEase POS.
+
+Requirements:
+
+- Feature-based clean architecture
+- Riverpod
+- go_router
+- offline-first structure
+- responsive UI system
+- dark/light theme
+- shared widget architecture
+- reusable design tokens
+
+Generate:
+
+1. Folder structure
+2. pubspec.yaml
+3. Routing
+4. Theme system
+5. Shared widgets
+6. Feature scaffolding
+
+Features:
+- printer
+- receipts
+- templates
+- settings
+- pdf_export
+
+Rules:
+- Never create massive files
+- Keep files under 300 lines
+- Split widgets properly
+- Generate production-ready code only

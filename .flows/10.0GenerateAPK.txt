@@ -1,0 +1,56 @@
+Use flutter-master-architect.
+
+Prepare PrintEasy POS for final production release.
+
+Tasks:
+
+1. Run full project analysis
+2. Fix all analyzer warnings/errors
+3. Optimize Riverpod providers
+4. Optimize widget rebuilds
+5. Add missing const constructors
+6. Remove dead code
+7. Optimize SQLite queries
+8. Optimize Bluetooth printer workflows
+9. Optimize PDF generation performance
+10. Improve startup performance
+11. Validate responsive layouts
+12. Validate dark/light themes
+13. Ensure offline-first stability
+14. Validate backup/restore flows
+15. Validate receipt template rendering
+16. Validate thermal printer formatting
+17. Validate 58mm and 80mm layouts
+18. Validate all routing/navigation flows
+19. Ensure production-ready error handling
+20. Ensure production-ready loading states
+
+Then:
+
+Generate production release configuration for Android.
+
+Generate:
+
+1. release-ready Android configuration
+2. optimized Gradle settings
+3. Android permissions validation
+4. app signing guidance
+5. APK generation commands
+6. install-to-device commands
+7. release checklist
+8. production optimization report
+
+Add a terminal helper script that asks:
+
+1. Generate APK
+2. Build App Bundle
+3. Install directly to connected Android phone
+
+Requirements:
+
+- production-ready only
+- do not regenerate stable features
+- keep architecture clean
+- preserve modular structure
+- keep files under 300 lines
+- explain major release changes

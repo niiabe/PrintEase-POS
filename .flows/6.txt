@@ -1,0 +1,63 @@
+Use flutter-feature-builder.
+
+Build the PDF export system for PrintEasy POS.
+
+Requirements:
+
+- Export receipts as PDF
+- Generate thermal-style PDF layouts
+- Support:
+  - 58mm format
+  - 80mm format
+- Share PDF files
+- Save PDFs locally
+- Reprint PDFs
+- Generate PDFs from saved receipts
+- Include:
+  - store name
+  - receipt number
+  - customer name
+  - items
+  - subtotal
+  - tax
+  - total
+  - footer
+  - QR placeholder
+
+Use:
+- pdf
+- printing
+- path_provider
+- flutter_riverpod
+
+Generate in this order:
+
+1. PDF models/helpers
+2. PDF formatter service
+3. PDF generation service
+4. local PDF storage service
+5. repository integration
+6. Riverpod providers/controllers
+7. PDF export actions
+8. PDF preview screen
+9. share/download handlers
+10. reprint PDF integration
+
+UI Requirements:
+
+- responsive PDF preview
+- loading states
+- export success/failure feedback
+- reusable action buttons
+- mobile-first design
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- Keep files under 300 lines
+- Split widgets properly
+- No PDF logic inside UI
+- Use reusable shared widgets
+- Generate production-ready code only
+- Explain folder placement
+- Do not regenerate existing files

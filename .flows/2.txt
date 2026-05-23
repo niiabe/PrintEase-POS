@@ -1,0 +1,41 @@
+Use flutter-feature-builder.
+
+Build the printer feature for PrintEasy POS.
+
+Requirements:
+
+- Bluetooth thermal printer scanning
+- Connect/disconnect printer
+- Save preferred printer locally
+- Auto reconnect support
+- ESC/POS compatibility
+- 58mm and 80mm paper support
+- Test print functionality
+
+Packages:
+- print_bluetooth_thermal
+- esc_pos_utils_plus
+- shared_preferences
+- flutter_riverpod
+
+Generate in this order:
+
+1. printer model
+2. printer datasource
+3. printer repository
+4. Riverpod providers/controllers
+5. printer settings screen
+6. printer scanner widget
+7. connection status widgets
+8. test print functionality
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- No UI logic in repositories/services
+- Keep files under 300 lines
+- Split widgets properly
+- Use reusable shared widgets
+- Generate production-ready code only
+- Explain folder placement
+- Do not regenerate existing foundation files

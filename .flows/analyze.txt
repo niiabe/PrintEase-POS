@@ -1,0 +1,5 @@
+flutter pub get
+flutter analyze
+
+flutter run
+

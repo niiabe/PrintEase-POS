@@ -1,0 +1,63 @@
+Use flutter-feature-builder.
+
+Build the receipts feature for PrintEasy POS.
+
+Requirements:
+
+- Create receipts
+- Add receipt items dynamically
+- Calculate totals automatically
+- Save receipts locally using SQLite
+- Generate automatic receipt numbers
+- Store print status
+- Store created date/time
+- Support offline-first workflow
+
+Receipt structure:
+
+- receipt number
+- customer name
+- items
+- subtotal
+- tax
+- total
+- print status
+- created date
+
+Use:
+- sqflite
+- path_provider
+- flutter_riverpod
+- intl
+
+Generate in this order:
+
+1. receipt entity/model
+2. SQLite datasource
+3. database service
+4. repository
+5. Riverpod providers/controllers
+6. receipt creation screen
+7. reusable receipt item widgets
+8. totals calculation system
+9. receipt state management
+10. local persistence flow
+
+UI Requirements:
+
+- mobile-first responsive UI
+- reusable form components
+- loading/error/empty states
+- add/remove receipt items dynamically
+- clean POS-style layout
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- Keep files under 300 lines
+- Split widgets properly
+- No database logic inside UI
+- Use reusable shared widgets
+- Generate production-ready code only
+- Explain folder placement
+- Do not regenerate existing files

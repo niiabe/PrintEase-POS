@@ -1,0 +1,83 @@
+Use flutter-feature-builder.
+
+Build the settings, backup, and restore system for PrintEasy POS.
+
+Requirements:
+
+General Settings:
+
+- store name
+- phone number
+- currency
+- tax percentage
+- default paper size
+- default template
+- dark/light mode
+- auto print toggle
+
+Printer Settings:
+
+- preferred printer
+- auto reconnect
+- print density
+- character size
+- line spacing
+
+Backup Features:
+
+- export receipts database
+- export templates
+- export settings
+- create full app backup
+- restore full backup
+- restore templates only
+- restore settings only
+
+Use:
+- shared_preferences
+- path_provider
+- flutter_riverpod
+- file_picker
+
+Generate in this order:
+
+1. settings entity/models
+2. settings datasource
+3. backup datasource/service
+4. restore service
+5. repository layer
+6. Riverpod providers/controllers
+7. settings screen
+8. backup/restore screen
+9. reusable settings widgets
+10. theme mode integration
+11. import/export handlers
+12. backup validation system
+
+UI Requirements:
+
+- responsive settings layout
+- loading/error states
+- backup progress indicators
+- restore confirmation dialogs
+- reusable settings tiles
+- modern POS settings UI
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- Keep files under 300 lines
+- Split widgets properly
+- No storage logic inside UI
+- Use reusable shared widgets
+- Generate production-ready code only
+- Explain folder placement
+- Do not regenerate existing files
+
+
+Run:
+
+-Code review / Code analysis
+-Fix issues
+-run analysis across the project.
+-show where we have reached by far

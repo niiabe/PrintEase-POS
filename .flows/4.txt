@@ -1,0 +1,57 @@
+Use flutter-feature-builder.
+
+Build the thermal printing integration for PrintEasy POS.
+
+Requirements:
+
+- Print receipts created from the receipts feature
+- Convert receipt data into ESC/POS commands
+- Support:
+  - 58mm paper
+  - 80mm paper
+- Print:
+  - store name
+  - receipt number
+  - items
+  - subtotal
+  - tax
+  - total
+  - footer message
+  - QR code placeholder
+- Integrate with saved Bluetooth printer
+- Update receipt print status after successful print
+- Support receipt reprinting
+
+Use:
+- esc_pos_utils_plus
+- print_bluetooth_thermal
+- flutter_riverpod
+
+Generate in this order:
+
+1. ESC/POS formatter service
+2. thermal print service
+3. printer-receipt integration repository
+4. Riverpod print controllers/providers
+5. print action handlers
+6. print preview widgets
+7. receipt print button integration
+8. print status update system
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- Keep files under 300 lines
+- Split widgets properly
+- No print logic inside UI
+- Use reusable shared widgets
+- Generate production-ready code only
+- Explain folder placement
+- Do not regenerate existing files
+
+UI Requirements:
+
+- loading states during printing
+- print success/failure feedback
+- responsive print controls
+- reusable print action widgets

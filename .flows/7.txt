@@ -1,0 +1,72 @@
+Use flutter-feature-builder.
+
+Build the receipt designer and template management system for PrintEasy POS.
+
+Requirements:
+
+Users must be able to customize:
+
+- store name
+- store phone number
+- logo
+- footer message
+- receipt header
+- alignment
+- font sizing
+- divider visibility
+- spacing
+- QR code visibility
+- receipt width
+- paper size:
+  - 58mm
+  - 80mm
+
+Support multiple templates:
+
+- shop receipt
+- restaurant receipt
+- invoice
+- delivery slip
+
+Templates must persist locally.
+
+Use:
+- flutter_riverpod
+- shared_preferences
+- path_provider
+- image_picker
+
+Generate in this order:
+
+1. template entity/model
+2. local template datasource
+3. template repository
+4. settings persistence service
+5. Riverpod template providers/controllers
+6. receipt designer screen
+7. reusable customization widgets
+8. template selector system
+9. logo upload integration
+10. receipt preview renderer
+11. live preview update system
+12. template save/load flow
+
+UI Requirements:
+
+- responsive receipt preview
+- mobile-first UI
+- reusable setting controls
+- modern POS settings design
+- loading/error states
+- real-time preview updates
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- Keep files under 300 lines
+- Split widgets properly
+- No settings logic inside UI
+- Use reusable shared widgets
+- Generate production-ready code only
+- Explain folder placement
+- Do not regenerate existing files

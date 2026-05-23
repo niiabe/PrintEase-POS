@@ -1,0 +1,50 @@
+Use flutter-master-architect.
+
+Perform a full production review and optimization pass for PrintEasy POS.
+
+Tasks:
+
+1. Run architecture review
+2. Run code analysis review
+3. Detect clean architecture violations
+4. Detect duplicated widgets
+5. Detect provider misuse
+6. Detect rebuild issues
+7. Detect large files
+8. Detect dead code
+9. Detect inconsistent naming
+10. Detect bad folder placement
+11. Detect missing loading/error states
+12. Detect missing const constructors
+13. Detect responsiveness issues
+14. Detect SQLite performance issues
+15. Detect printer workflow issues
+16. Detect PDF rendering issues
+17. Detect theme inconsistencies
+
+Then:
+
+- Refactor problematic areas
+- Optimize provider usage
+- Improve widget composition
+- Improve state isolation
+- Improve performance
+- Improve reusable widget structure
+- Improve folder organization
+
+Generate:
+
+- optimization report
+- architecture review summary
+- issue list
+- fixes
+- production-readiness checklist
+
+Rules:
+
+- Do not regenerate stable features
+- Refactor incrementally
+- Keep files under 300 lines
+- Preserve clean architecture
+- Generate production-ready improvements only
+- Explain all major refactors

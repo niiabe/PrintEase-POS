@@ -1,0 +1,84 @@
+Use flutter-feature-builder.
+
+Implement the following production fixes for PrintEasy POS.
+
+Fix 1: Bluetooth Auto Enable
+
+Problem:
+- App does not handle Bluetooth being OFF.
+
+Requirements:
+- Detect Bluetooth OFF state automatically
+- Prompt user to enable Bluetooth
+- Attempt Bluetooth enable flow where supported
+- Show proper permission/error states
+- Handle denied permissions gracefully
+- Handle Android Bluetooth permissions correctly
+- Improve printer connection UX
+
+Generate:
+1. Bluetooth state handler
+2. Bluetooth enable flow
+3. Permission management updates
+4. User-friendly Bluetooth dialogs
+5. Connection retry handling
+
+Use:
+- print_bluetooth_thermal
+- permission_handler
+- flutter_riverpod
+
+---
+
+Fix 2: Change Default Paper Size
+
+Requirements:
+- Change default paper size from 58mm to 80mm
+- Update:
+  - settings defaults
+  - receipt rendering
+  - thermal printing
+  - PDF rendering
+  - template previews
+
+Ensure:
+- Existing saved settings remain compatible
+- New installs default to 80mm
+
+---
+
+Fix 3: Direct PDF Download Button
+
+Requirements:
+- Add "Download PDF" button directly on:
+  - receipt details screen
+  - receipt history item actions
+  - receipt preview screen
+
+Features:
+- One-tap PDF export
+- Save directly to device storage
+- Show success/failure snackbar
+- Reuse existing PDF service
+- Avoid duplicate PDF generation logic
+
+Generate:
+1. reusable download PDF action widget
+2. receipt action integration
+3. download state handling
+4. storage success feedback
+5. error handling flow
+
+Architecture Rules:
+
+- Follow clean architecture strictly
+- Keep files under 300 lines
+- Split widgets properly
+- No logic inside UI
+- Reuse existing services
+- Do not regenerate stable features
+- Generate production-ready fixes only
+- Explain all modified files
+
+Run:
+-Flutter run ---release
