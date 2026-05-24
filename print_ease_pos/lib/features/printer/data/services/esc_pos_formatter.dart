@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'package:image/image.dart' as img;
 import '../../../receipts/data/models/receipt.dart';
 import '../../../receipts/data/models/receipt_item.dart';
+import '../../../templates/data/models/receipt_template.dart';
 
 class EscPosFormatter {
   final int paperWidth;
@@ -11,13 +16,18 @@ class EscPosFormatter {
   PaperSize get _paperSize =>
       paperWidth == 58 ? PaperSize.mm58 : PaperSize.mm80;
 
-  Future<List<int>> formatReceipt(Receipt receipt) async {
+  Future<List<int>> formatReceipt(Receipt receipt, {ReceiptTemplate? template}) async {
     final profile = await CapabilityProfile.load();
     final gen = Generator(_paperSize, profile);
 
+    img.Image? logoImage;
+    if (template != null && template.showLogo && template.logoPath != null) {
+      logoImage = await _loadLogo(template.logoPath!);
+    }
+
     var bytes = <int>[];
 
-    bytes += _buildHeader(gen, receipt);
+    bytes += await _buildHeader(gen, receipt, template: template, logoImage: logoImage);
     bytes += _buildItems(gen, receipt.items);
     bytes += _buildTotals(gen, receipt);
     bytes += _buildFooter(gen);
@@ -26,10 +36,35 @@ class EscPosFormatter {
     return bytes;
   }
 
-  List<int> _buildHeader(Generator gen, Receipt receipt) {
+  Future<img.Image?> _loadLogo(String logoPath) async {
+    try {
+      final file = File(logoPath);
+      if (!await file.exists()) return null;
+      final Uint8List bytes = await file.readAsBytes();
+      final image = img.decodeImage(bytes);
+      if (image == null) return null;
+      final maxW = _paperSize == PaperSize.mm58 ? 200 : 320;
+      if (image.width > maxW) {
+        final scale = maxW / image.width;
+        return img.copyResize(image, width: maxW, height: (image.height * scale).round());
+      }
+      return image;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<List<int>> _buildHeader(Generator gen, Receipt receipt, {ReceiptTemplate? template, img.Image? logoImage}) async {
     var bytes = <int>[];
+    if (logoImage != null) {
+      bytes += gen.image(logoImage);
+      bytes += gen.feed(1);
+    }
+    final displayStoreName = (template != null && template.storeName.isNotEmpty)
+        ? template.storeName
+        : receipt.storeName;
     bytes += gen.text(
-      receipt.storeName,
+      displayStoreName,
       styles: const PosStyles(
         align: PosAlign.center,
         bold: true,

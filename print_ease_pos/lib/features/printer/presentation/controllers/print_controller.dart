@@ -4,6 +4,9 @@ import '../../../receipts/data/models/receipt.dart';
 import '../../../receipts/data/repositories/receipt_repository.dart';
 import '../../../receipts/presentation/controllers/receipt_provider.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
+import '../../../templates/data/models/receipt_template.dart';
+import '../../../templates/data/repositories/template_repository.dart';
+import '../../../templates/presentation/controllers/template_provider.dart';
 import 'printer_provider.dart';
 
 class PrintControllerState {
@@ -33,13 +36,26 @@ class PrintControllerState {
 class PrintController extends StateNotifier<PrintControllerState> {
   final ThermalPrintService _printService;
   final ReceiptRepository _receiptRepository;
+  final TemplateRepository _templateRepository;
+  final int? _defaultTemplateId;
 
-  PrintController(this._printService, this._receiptRepository)
+  PrintController(this._printService, this._receiptRepository,
+      this._templateRepository, this._defaultTemplateId)
       : super(const PrintControllerState());
+
+  Future<ReceiptTemplate?> _loadDefaultTemplate() async {
+    if (_defaultTemplateId == null) return null;
+    try {
+      return await _templateRepository.getTemplateById(_defaultTemplateId);
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<void> printReceipt(Receipt receipt) async {
     state = state.copyWith(isPrinting: true, message: null);
-    final result = await _printService.printReceipt(receipt);
+    final template = await _loadDefaultTemplate();
+    final result = await _printService.printReceipt(receipt, template: template);
     if (result.success && receipt.id != null) {
       final updated = receipt.copyWith(
         printStatus: PrintStatus.printed,
@@ -60,7 +76,8 @@ class PrintController extends StateNotifier<PrintControllerState> {
 
   Future<void> reprintReceipt(Receipt receipt) async {
     state = state.copyWith(isPrinting: true, message: null);
-    final result = await _printService.reprintReceipt(receipt);
+    final template = await _loadDefaultTemplate();
+    final result = await _printService.reprintReceipt(receipt, template: template);
     if (result.success && receipt.id != null) {
       final updated = receipt.copyWith(
         printStatus: PrintStatus.printed,
@@ -90,7 +107,9 @@ final thermalPrintServiceProvider = Provider<ThermalPrintService>((ref) {
 
 final printControllerProvider =
     StateNotifierProvider<PrintController, PrintControllerState>((ref) {
+  final settings = ref.watch(settingsProvider);
   final printService = ref.watch(thermalPrintServiceProvider);
   final receiptRepo = ref.watch(receiptRepositoryProvider);
-  return PrintController(printService, receiptRepo);
+  final templateRepo = ref.watch(templateRepositoryProvider);
+  return PrintController(printService, receiptRepo, templateRepo, settings.defaultTemplateId);
 });

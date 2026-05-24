@@ -70,9 +70,7 @@ class PrinterScannerWidget extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        Expanded(
-          child: _buildDeviceList(context, ref, state),
-        ),
+        _buildDeviceList(context, ref, state),
       ],
     );
   }
@@ -130,6 +128,8 @@ class PrinterScannerWidget extends ConsumerWidget {
       );
     }
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: state.devices.length,
       itemBuilder: (context, index) {
         final device = state.devices[index];

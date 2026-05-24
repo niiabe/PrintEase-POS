@@ -150,6 +150,59 @@ Update this file whenever a new feature is added or an existing one is modified.
 - flutter analyze passes with 0 issues
 - Files: android/gradle.properties
 
+--- Fix: ESC/POS Logo Rendering ---
+- Added logo loading from template.logoPath via File + img.decodeImage in EscPosFormatter._loadLogo()
+- Auto-resizes images to max 320px (80mm) / 200px (58mm) to prevent ESC/POS buffer overflow
+- Template, store name, footer passed through to thermal print service and formatter
+- Files: esc_pos_formatter.dart, thermal_print_service.dart, print_controller.dart
+
+--- Fix: PDF Receipt Matches Thermal Format ---
+- Removed extra "Price" column from PDF items table
+- Changed column widths to proportional flex: Item (flex 6), Qty (flex 2), Total (flex 4) — matching ESC/POS 6:2:4 ratio
+- Files: pdf_formatter.dart
+
+--- Fix: Bluetooth Scan Shows All Devices (Paired + Unpaired) ---
+- Updated BluetoothPrinterService.kt startDiscovery() to accumulate all found devices (bonded + newly discovered) into a mutableSetOf, deduplicating by MAC address
+- Registered native_printer MethodChannel in MainActivity.kt
+- Updated printer_datasource.dart scanDevices() to merge pairedBluetooths results with NativePrinterService.discoverDevices() output, deduplicating by address
+- Files: BluetoothPrinterService.kt, MainActivity.kt, printer_datasource.dart
+
+--- Fix: Type Cast Error in NativePrinterService ---
+- Changed result.cast<Map<String, dynamic>>() to safe result.map((m) { final map = m as Map; ... }) to handle HashMap<Object?, Object?> from MethodChannel
+- Files: native_printer_service.dart
+
+--- Fix: SnackBar Error Dismiss Not Working ---
+- Added hideCurrentSnackBar() before showSnackBar() in printer_screen.dart and create_receipt_screen.dart
+- Added SnackBarAction("Dismiss") that calls hideCurrentSnackBar() + clearError() on all error SnackBars
+- Added dismiss action to backup_restore_screen.dart error SnackBars
+- Added 5-second duration to error SnackBars for readability
+- Files: printer_screen.dart, create_receipt_screen.dart, backup_restore_screen.dart, template_designer_screen.dart
+
+--- Feature: Set as Default Template Toggle ---
+- Added bool _setAsDefault state + "Defaults" section in TemplateDesignerScreen with ToggleSetting
+- Changed saveTemplate() return type from bool to int? (returns saved template ID)
+- After save, if toggle is on, calls settingsProvider.updateDefaultTemplateId(savedId)
+- Files: template_designer_screen.dart, template_provider.dart
+
+--- Chore: Clean Up Unused Platforms ---
+- Removed web/, linux/, windows/ platform directories (Android only)
+- Updated pubspec: flutter_local_notifications_windows removed from dependency tree
+- Files: (deleted directories)
+
+--- Dependency Audit: Major Bumps Not Safe ---
+- riverpod 2.x → 3.x: StateNotifier/StateNotifierProvider removed; all providers need rewrite
+- go_router 14.x → 17.x: Breaking API changes
+- file_picker 8.x → 11.x: FilePicker.platform removed
+- flutter_local_notifications 18.x → 21.x: API migration needed
+- image 4.9.0 blocked: requires meta ^1.18.2 but Flutter SDK pins meta 1.18.0
+- All dependencies kept at current pubspec constraints (flutter analyze passes 0 issues)
+- Files: pubspec.yaml
+
+--- Chore: README & Documentation Update ---
+- Updated README to reflect Android-only platform, latest features, and tech stack
+- Updated .flows/additional_features_and_updates.txt with all changes from this session
+- Files: README.md, .flows/additional_features_and_updates.txt
+
 --- Feature: Native PDF Download with System Progress Notifications ---
 - Replaced custom Kotlin MediaStore PDF save + flutter_local_notifications approach with flutter_file_downloader
 - flutter_file_downloader provides native Android download manager integration with system-level progress bar, completion, and failure notifications

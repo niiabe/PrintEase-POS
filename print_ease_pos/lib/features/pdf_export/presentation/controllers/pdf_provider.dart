@@ -7,6 +7,9 @@ import '../../data/services/document_download_service.dart';
 import '../../data/services/pdf_formatter.dart';
 import '../../../receipts/presentation/controllers/receipt_provider.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
+import '../../../templates/data/models/receipt_template.dart';
+import '../../../templates/data/repositories/template_repository.dart';
+import '../../../templates/presentation/controllers/template_provider.dart';
 
 class PdfState {
   final List<PdfDocument> documents;
@@ -61,8 +64,12 @@ class PdfState {
 class PdfNotifier extends StateNotifier<PdfState> {
   final PdfRepository _repository;
   final DocumentDownloadService _downloadService;
+  final TemplateRepository _templateRepository;
+  final int? _defaultTemplateId;
 
-  PdfNotifier(this._repository, this._downloadService) : super(const PdfState());
+  PdfNotifier(this._repository, this._downloadService,
+      this._templateRepository, this._defaultTemplateId)
+      : super(const PdfState());
 
   Future<void> loadDocuments() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -77,7 +84,11 @@ class PdfNotifier extends StateNotifier<PdfState> {
   Future<void> exportReceipt(int receiptId) async {
     state = state.copyWith(isExporting: true, error: null);
     try {
-      final doc = await _repository.exportReceipt(receiptId);
+      ReceiptTemplate? template;
+      if (_defaultTemplateId != null) {
+        template = await _templateRepository.getTemplateById(_defaultTemplateId);
+      }
+      final doc = await _repository.exportReceipt(receiptId, template: template);
       state = state.copyWith(isExporting: false, selectedDocument: doc);
       await loadDocuments();
     } catch (e) {
@@ -125,9 +136,10 @@ class PdfNotifier extends StateNotifier<PdfState> {
     try {
       final path = await _repository.downloadPdf(documentId);
       if (path != null) {
+        final fileName = await _repository.getDisplayName(documentId);
         await _downloadService.downloadFile(
           localPath: path,
-          fileName: _getFileName(documentId),
+          fileName: fileName,
           onProgress: (progress) {
             state = state.copyWith(downloadProgress: progress);
           },
@@ -139,11 +151,6 @@ class PdfNotifier extends StateNotifier<PdfState> {
       state = state.copyWith(isDownloading: false, downloadProgress: 0, error: e.toString());
       return null;
     }
-  }
-
-  String _getFileName(int documentId) {
-    final doc = state.documents.where((d) => d.id == documentId).firstOrNull;
-    return doc?.fileName ?? 'receipt_$documentId.pdf';
   }
 
   Future<void> deleteDocument(int id) async {
@@ -177,10 +184,13 @@ final pdfFormatterProvider = Provider<PdfFormatter>((ref) {
 });
 
 final pdfRepositoryProvider = Provider<PdfRepository>((ref) {
+  final settings = ref.watch(settingsProvider);
   return PdfRepository(
     formatter: ref.watch(pdfFormatterProvider),
     storageService: ref.watch(pdfStorageServiceProvider),
     receiptRepository: ref.watch(receiptRepositoryProvider),
+    templateRepository: ref.watch(templateRepositoryProvider),
+    defaultTemplateId: settings.defaultTemplateId,
   );
 });
 
@@ -189,8 +199,11 @@ final documentDownloadServiceProvider = Provider<DocumentDownloadService>((ref) 
 });
 
 final pdfProvider = StateNotifierProvider<PdfNotifier, PdfState>((ref) {
+  final settings = ref.watch(settingsProvider);
   return PdfNotifier(
     ref.watch(pdfRepositoryProvider),
     ref.watch(documentDownloadServiceProvider),
+    ref.watch(templateRepositoryProvider),
+    settings.defaultTemplateId,
   );
 });

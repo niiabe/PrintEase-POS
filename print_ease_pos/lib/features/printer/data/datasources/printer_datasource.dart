@@ -2,6 +2,7 @@ import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/services/native_printer_service.dart';
 import '../models/printer_device.dart';
 
 class BluetoothOffException implements Exception {
@@ -20,19 +21,29 @@ class BluetoothPermissionException implements Exception {
 }
 
 class PrinterDatasource {
+  final NativePrinterService _nativeService = NativePrinterService();
+
   Future<List<PrinterDevice>> scanDevices() async {
     final bool isEnabled = await PrintBluetoothThermal.bluetoothEnabled;
     if (!isEnabled) {
       throw const BluetoothOffException();
     }
     try {
-      final available = await PrintBluetoothThermal.pairedBluetooths;
-      return available
-          .map((d) => PrinterDevice(
-                name: d.name,
-                address: d.macAdress,
-              ))
-          .toList();
+      final paired = await PrintBluetoothThermal.pairedBluetooths;
+      final pairedMap = <String, PrinterDevice>{};
+      for (final d in paired) {
+        pairedMap[d.macAdress] = PrinterDevice(name: d.name, address: d.macAdress);
+      }
+      final nativeDevices = await _nativeService.discoverDevices();
+      if (nativeDevices != null) {
+        for (final d in nativeDevices) {
+          final addr = d['address'] ?? '';
+          if (addr.isNotEmpty && !pairedMap.containsKey(addr)) {
+            pairedMap[addr] = PrinterDevice(name: d['name'] ?? 'Unknown', address: addr);
+          }
+        }
+      }
+      return pairedMap.values.toList();
     } on PlatformException catch (e) {
       final msg = e.message?.toLowerCase() ?? '';
       if (msg.contains('bluetooth') && msg.contains('off')) {
@@ -96,7 +107,9 @@ class PrinterDatasource {
       ),
     );
     bytes += generator.feed(1);
-    bytes += generator.text(storeName,
+    bytes += generator.text(' by',
+        styles: const PosStyles(align: PosAlign.center));
+    bytes += generator.text('NiiAbe.github.io',
         styles: const PosStyles(align: PosAlign.center));
     bytes += generator.feed(1);
     bytes += generator.hr();

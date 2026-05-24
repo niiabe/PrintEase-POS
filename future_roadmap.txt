@@ -1,0 +1,125 @@
+PrintEase POS — Future Roadmap
+================================
+Generated: May 24, 2026 | Based on v1.0.0+2 codebase analysis
+
+================================
+PRIORITY 1 — Quick Wins (< 1 hour each)
+================================
+
+[ ] Configurable QR Code URL
+    - Currently hardcoded to "https://print-ease-pos.app" in thermal print service
+    - Add "QR Code URL" field to Settings → Store Information
+    - Pass through to receipt generation (both thermal + PDF)
+
+[ ] Receipt Search by Customer Name
+    - Search widget currently only filters by receiptNumber
+    - Add WHERE customerName LIKE ? to the SQL query in ReceiptDataSource
+
+[ ] Printable QR Value Override per Receipt
+    - Add optional "QR Code Text" field to Create Receipt form
+    - Overrides the default QR URL when present
+    - Useful for order-specific links, payment URLs, or tracking codes
+
+[ ] Integrate PrintPreviewWidget
+    - Widget exists (print_preview_widget.dart) but is never used
+    - Add it to Receipt Detail screen as a "Preview" tab or button
+    - Shows on-screen simulated receipt before printing
+
+[ ] Remove Dead Dependencies
+    - dio (^5.7.0) — never imported, intended for future API use
+    - permission_handler (^11.3.1) — never imported, permissions handled via custom MethodChannel
+    - Clean up pubspec.yaml
+
+================================
+PRIORITY 2 — Core Enhancements (2-4 hours each)
+================================
+
+[ ] Customer Database
+    - New SQLite table: customers (id, name, phone, email, address, notes, createdAt)
+    - Customer picker/autocomplete on Create Receipt form
+    - Customer detail screen with order history
+    - Customer list screen with search
+    - Reuses existing data layer patterns (model → datasource → repo → provider)
+
+[ ] Daily / Periodic Sales Reports
+    - Dashboard currently shows only today's count + total
+    - Add date-range selector (Today, This Week, This Month, Custom)
+    - Simple chart (bars or lines) using fl_chart or custom painter
+    - Export report as PDF
+    - Show top products, payment summary
+
+[ ] Receipt Duplication
+    - Add "Duplicate" action button on Receipt Detail screen
+    - Copies all items + customer + notes to a new receipt
+    - New receipt gets auto-incremented number
+    - Saves user time for repeat orders
+
+[ ] Inventory / Stock Management
+    - New SQLite table: products (id, name, sku, price, stock, lowStockThreshold, category)
+    - Product list screen with search + add/edit/delete
+    - On receipt save: auto-deduct stock for each item
+    - Low-stock warning badge on dashboard
+    - Optional: scan barcode to add product (see Priority 3)
+
+[ ] Barcode / QR Scanner for Item Entry
+    - Add mobile_scanner package
+    - Scan product barcode to auto-fill item name + price on Create Receipt
+    - Only useful if Inventory feature is implemented (otherwise no product DB to look up)
+
+================================
+PRIORITY 3 — Advanced Features (1-3 days each)
+================================
+
+[ ] Cloud Sync / Multi-Device
+    - The dio dep suggests this was always planned
+    - Simple REST API (e.g. Supabase, Firebase, or custom backend)
+    - Sync receipts, templates, settings across devices
+    - Conflict resolution (last-write-wins or manual merge)
+
+[ ] Multi-User with Roles
+    - Auth screen (PIN-based for simplicity, or Firebase Auth)
+    - Roles: Admin, Cashier, Manager
+    - Admin: full access
+    - Cashier: create receipts, print only
+    - Manager: reports, refunds
+    - Track createdBy per receipt
+
+[ ] Expense Tracking
+    - New SQLite table: expenses (id, category, amount, description, date, createdBy)
+    - Expense entry screen
+    - Net profit = total sales - total expenses
+    - Include in sales reports
+
+[ ] VAT / Tax Report Generation
+    - Collect VAT per receipt (already have tax field)
+    - Generate PDF tax summary for any date range
+    - Show: gross sales, VAT collected, net sales
+    - Useful for accounting compliance
+
+[ ] Discount Engine
+    - Per-item discount (%) or fixed amount
+    - Per-receipt discount
+    - Promo code system (optional)
+    - Show discount line on receipts
+
+================================
+ARCHITECTURE NOTES
+================================
+
+- All features follow clean architecture: model → datasource → service → repository → controller (provider) → screen/widget
+- SQLite migrations in database_service.dart (v1 → v2 adds templates table)
+- For new DB tables, increment version and add migration
+- Settings are stored as JSON in SharedPreferences (key: 'app_settings')
+- Printer preferences stored separately in SharedPreferences
+- PDF files stored on filesystem: {appDocDir}/pdf_exports/
+- Backup exports: database.db + settings.json + templates.json
+
+================================
+DEPENDENCY BUMP BLOCKERS
+================================
+
+Pending (require code migration):
+- riverpod 2.6.1 → 3.x (breaking API changes)
+- go_router 14.8.1 → 17.x (breaking API changes)
+- file_picker 8.3.7 → 11.x (breaking API changes)
+- image 4.8.0 → 4.9.0 (blocked by flutter_test pinning meta 1.18.0)

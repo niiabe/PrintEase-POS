@@ -7,6 +7,7 @@ import '../../../../shared/widgets/app_loader.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../printer/presentation/controllers/print_controller.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
+import '../../../templates/presentation/controllers/template_provider.dart';
 import '../../data/models/receipt.dart';
 import '../controllers/receipt_provider.dart';
 import '../widgets/receipt_item_input.dart';
@@ -38,12 +39,23 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
         Navigator.of(context).pop();
       }
       if (next.error != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${next.error}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Error: ${next.error}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                textColor: Colors.white,
+                onPressed: () {
+                  ref.read(receiptProvider.notifier).clearError();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+              ),
+            ),
+          );
       }
     });
     Future.microtask(() => _initialize());
@@ -63,7 +75,17 @@ class _CreateReceiptScreenState extends ConsumerState<CreateReceiptScreen> {
         _notesCtrl.text = existing.notes ?? '';
       }
     } else {
-      notifier.startNewReceipt(settings.storeName);
+      String storeName = settings.storeName;
+      if (settings.defaultTemplateId != null) {
+        final templates = ref.read(templateProvider).templates;
+        final defaultTemplate = templates.where(
+          (t) => t.id == settings.defaultTemplateId && t.storeName.isNotEmpty,
+        );
+        if (defaultTemplate.isNotEmpty) {
+          storeName = defaultTemplate.first.storeName;
+        }
+      }
+      notifier.startNewReceipt(storeName);
     }
     if (mounted) _initialized = true;
   }

@@ -2,14 +2,14 @@
 
 > Thermal receipt printing made easy. A lightweight, offline-first Flutter POS app for Bluetooth thermal printers.
 
-PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads and native preview), and print directly — no internet or account required. Features a dashboard, receipt editing, auto-print, scan timeout/cancel, and a full App Permissions Center in Settings.
+PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Design receipt templates, create and manage receipts, export as PDF (with save-to-Downloads and native preview), and print directly — no internet or account required. Features a dashboard, receipt editing, auto-print, scan timeout/cancel, set-as-default template, and a full App Permissions Center in Settings. **Android only** (web/linux/windows removed).
 
 ---
 
 ## Features
 
 ### Printer Management
-- Bluetooth printer scanning & discovery (with 15s timeout & cancel)
+- Bluetooth printer scanning & discovery (paired + nearby unpaired via native `startDiscovery` — with 15s timeout & cancel)
 - Connect/disconnect with auto-reconnect
 - Preferred printer persistence
 - 58mm and 80mm paper size support
@@ -28,22 +28,24 @@ PrintEase POS connects to Bluetooth thermal printers via ESC/POS protocol. Desig
 ### Receipt Template Designer
 - Visual editor with live preview
 - Auto-seeded default templates on first install (Shop, Restaurant, Invoice, Delivery Slip)
-- Customizable: store name, phone, header, footer, logo upload
+- Customizable: store name, phone, header, footer, logo upload (auto-resized for thermal printer limits)
 - Font size, alignment (left/center), spacing controls
 - Toggle visibility for logo, QR code, dividers, itemized list
+- "Set as Default Template" toggle on save
 - Save button with unsaved-changes guard (confirmation dialog)
+- Delete button when editing existing template
 
 ### Thermal Printing
-- Full ESC/POS command generation
+- Full ESC/POS command generation including logo rendering (auto-resized to 320px/200px max width)
 - Direct printing to connected Bluetooth printer
 - Print status tracking (not printed / printed / failed)
 - Reprint from receipt history
 - Auto-print after receipt creation (configurable)
 - Paper size-aware formatting
-- Configurable tax rate shown on printed receipt
+- Template-aware store name and footer on printed receipts
 
 ### PDF Export
-- Generate thermal-style PDF receipts
+- Generate PDF receipts matching thermal print format (same columns: Item / Qty / Total — no extra Price column)
 - Native PDF preview (scrollable, zoomable)
 - Save to Downloads folder with native system progress notification (via `flutter_file_downloader`)
 - Share, print PDFs via system dialogs
@@ -133,7 +135,8 @@ PrintEase-POS/
 │   ├── lib/
 │   │   ├── main.dart                 # Entry point + ProviderScope
 │   │   ├── app.dart                  # MaterialApp.router + theme
-│   │   ├── core/                     # Constants, theme, utils
+│   │   ├── core/                     # Constants, services, theme, utils
+│   │   │   └── services/             # Platform channels (Bluetooth, native printer, PDF save, permissions, notifications)
 │   │   ├── routes/                   # GoRouter config (ShellRoute)
 │   │   ├── shared/                   # Reusable widgets, dialogs, layouts
 │   │   └── features/                 # Feature modules
@@ -144,7 +147,7 @@ PrintEase-POS/
 │   │       ├── settings/             # Settings + backup/restore
 │   │       └── pdf_export/           # PDF generation, preview & management
 │   ├── assets/images/                # Bundled app icon & logo
-│   └── android/ios/web/              # Platform configs
+│   └── android/                      # Android platform config (web/linux/windows removed)
 ```
 
 ### Feature Module Structure
@@ -181,7 +184,7 @@ cd print_ease_pos
 flutter pub get
 
 # Run on connected device
-flutter run
+flutter run -d <device-id>
 
 # Or build APK and install manually
 flutter build apk --debug
@@ -192,11 +195,13 @@ flutter build apk --debug
 
 ```bash
 flutter build apk --release
-# For split APKs (per architecture):
-flutter build apk --split-per-abi
+# APK location: build/app/outputs/flutter-apk/app-release.apk
+
+# Install on device
+flutter install -d <device-id>
 ```
 
-**Important:** Before building a release APK, configure signing in `android/app/build.gradle.kts`. By default, the release build uses debug signing keys.
+**Signing:** Release builds are signed with the project's keystore configured in `android/app/build.gradle.kts`.
 
 ---
 
@@ -204,7 +209,7 @@ flutter build apk --split-per-abi
 
 ### Android
 - **Min SDK:** Flutter default (typically 21+)
-- **Permissions:** INTERNET, BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION (maxSdkVersion=30), POST_NOTIFICATIONS, READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, WRITE_EXTERNAL_STORAGE (maxSdkVersion=28), READ_EXTERNAL_STORAGE (maxSdkVersion=32)
+- **Permissions:** INTERNET, BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION (maxSdkVersion=30), POST_NOTIFICATIONS, READ_MEDIA_IMAGES, WRITE_EXTERNAL_STORAGE (maxSdkVersion=28), READ_EXTERNAL_STORAGE (maxSdkVersion=32)
 - **App Icons:** Custom PrintEasePOS icons across all densities + adaptive icon support (API 26+)
 
 ### App Icon Files
@@ -232,15 +237,22 @@ Built with [OpenCode AI](https://opencode.ai):
 
 ---
 
+## Release
+
+- **Latest:** v1.0.0+2 (May 24, 2026)
+- **Application ID:** `io.niiabe.easepos`
+- **Test print:** `TEST PRINT / by / NiiAbe.github.io`
+
 ## Known Limitations
 
 - Bluetooth only (no USB/Wi-Fi printer support)
 - Offline-only (no cloud sync)
-- `dart:io` imports make web deployment unsupported
+- `dart:io` imports make web deployment unsupported (web platform removed)
 - Print status requires manual refresh after printing
 - 3rd-party plugins (`flutter_file_downloader`, `image_picker_android`, `print_bluetooth_thermal`, `shared_preferences_android`) still apply KGP directly instead of using Flutter's built-in Kotlin — non-fatal warning until plugin authors update
 - No domain layer in architecture (empty `domain/` directories) — data + presentation layers only
 - PDF "Save to Downloads" button may fail to copy to public Downloads — `flutter_file_downloader` package has known compatibility issues; fallback to app-internal storage works
+- Major dependency bumps (riverpod 3.x, go_router 17.x, file_picker 11.x) blocked — require code migration due to breaking API changes
 
 ---
 

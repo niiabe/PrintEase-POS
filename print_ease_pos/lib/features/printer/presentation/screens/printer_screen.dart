@@ -26,15 +26,21 @@ class _PrinterScreenState extends ConsumerState<PrinterScreen> {
   Widget build(BuildContext context) {
     ref.listen(printerProvider, (previous, next) {
       if (next.error != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.error!),
-            action: SnackBarAction(
-              label: 'Dismiss',
-              onPressed: () => ref.read(printerProvider.notifier).clearError(),
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(next.error!),
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                onPressed: () {
+                  ref.read(printerProvider.notifier).clearError();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+              ),
             ),
-          ),
-        );
+          );
       }
     });
 
@@ -54,10 +60,7 @@ class _PrinterScreenState extends ConsumerState<PrinterScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
-            SizedBox(
-              height: 300,
-              child: const PrinterScannerWidget(),
-            ),
+            const PrinterScannerWidget(),
           ],
         ),
       ),

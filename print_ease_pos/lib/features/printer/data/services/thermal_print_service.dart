@@ -1,6 +1,7 @@
 import '../datasources/printer_datasource.dart';
 import 'esc_pos_formatter.dart';
 import '../../../receipts/data/models/receipt.dart';
+import '../../../templates/data/models/receipt_template.dart';
 
 class ThermalPrintService {
   final PrinterDatasource _datasource;
@@ -11,7 +12,7 @@ class ThermalPrintService {
       : _paperWidth = paperWidth,
         _taxPercentage = taxPercentage;
 
-  Future<PrintResult> printReceipt(Receipt receipt) async {
+  Future<PrintResult> printReceipt(Receipt receipt, {ReceiptTemplate? template}) async {
     final isConnected = await _datasource.isConnected();
     if (!isConnected) {
       return PrintResult.failure('No printer connected');
@@ -19,7 +20,7 @@ class ThermalPrintService {
 
     try {
       final formatter = EscPosFormatter(paperWidth: _paperWidth, taxPercentage: _taxPercentage);
-      final bytes = await formatter.formatReceipt(receipt);
+      final bytes = await formatter.formatReceipt(receipt, template: template);
       final success = await _datasource.printBytes(bytes);
 
       if (success) {
@@ -31,8 +32,8 @@ class ThermalPrintService {
     }
   }
 
-  Future<PrintResult> reprintReceipt(Receipt receipt) async {
-    return printReceipt(receipt);
+  Future<PrintResult> reprintReceipt(Receipt receipt, {ReceiptTemplate? template}) async {
+    return printReceipt(receipt, template: template);
   }
 }
 

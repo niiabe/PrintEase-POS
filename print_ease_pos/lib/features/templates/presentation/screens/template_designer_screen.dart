@@ -5,6 +5,7 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_loader.dart';
 import '../../../../shared/widgets/app_error_view.dart';
+import '../../../settings/presentation/controllers/settings_provider.dart';
 import '../controllers/template_provider.dart';
 import '../widgets/template_preview.dart';
 import '../widgets/template_settings_widgets.dart';
@@ -22,6 +23,7 @@ class TemplateDesignerScreen extends ConsumerStatefulWidget {
 
 class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen> {
   bool _hasChanges = false;
+  bool _setAsDefault = false;
 
   @override
   void initState() {
@@ -255,6 +257,21 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildSection(
+          'Defaults',
+          Icons.star,
+          children: [
+            ToggleSetting(
+              label: 'Set as Default Template',
+              value: _setAsDefault,
+              onChanged: (v) {
+                setState(() => _setAsDefault = v);
+                _hasChanges = true;
+              },
+            ),
+          ],
+        ),
         const SizedBox(height: AppSpacing.md),
         Consumer(builder: (context, ref, _) {
           final saving = ref.watch(templateProvider.select((s) => s.isSaving));
@@ -328,9 +345,12 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
   Future<void> _save() async {
     final navigator = Navigator.of(context);
     final notifier = ref.read(templateProvider.notifier);
-    final success = await notifier.saveTemplate();
+    final savedId = await notifier.saveTemplate();
     if (mounted) {
-      if (success) {
+      if (savedId != null) {
+        if (_setAsDefault) {
+          ref.read(settingsProvider.notifier).updateDefaultTemplateId(savedId);
+        }
         setState(() => _hasChanges = false);
         navigator.pop();
       } else {
@@ -338,6 +358,11 @@ class _TemplateDesignerScreenState extends ConsumerState<TemplateDesignerScreen>
           SnackBar(
             content: const Text('Failed to save template'),
             backgroundColor: Theme.of(context).colorScheme.error,
+            action: SnackBarAction(
+              label: 'Dismiss',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
           ),
         );
       }

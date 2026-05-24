@@ -60,13 +60,11 @@ class MainActivity : FlutterActivity() {
                 "checkMediaImages" -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         result.success(
-                            hasPermission(Manifest.permission.READ_MEDIA_IMAGES) &&
-                            hasPermission(Manifest.permission.READ_MEDIA_VIDEO)
+                            hasPermission(Manifest.permission.READ_MEDIA_IMAGES)
                         )
                     } else {
                         result.success(
-                            hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE) &&
-                            hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                         )
                     }
                 }
@@ -114,10 +112,7 @@ class MainActivity : FlutterActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         pendingPermissionResult = result
                         requestPermissions(
-                            arrayOf(
-                                Manifest.permission.READ_MEDIA_IMAGES,
-                                Manifest.permission.READ_MEDIA_VIDEO
-                            ),
+                            arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
                             permissionRequestCode
                         )
                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -142,10 +137,8 @@ class MainActivity : FlutterActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         permissions.add(Manifest.permission.POST_NOTIFICATIONS)
                         permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
-                        permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                         permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-                        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     }
                     if (permissions.isEmpty()) {
                         result.success(true)
@@ -153,6 +146,46 @@ class MainActivity : FlutterActivity() {
                         pendingPermissionResult = result
                         pendingPermissions = permissions.toTypedArray()
                         requestPermissions(permissions.toTypedArray(), permissionRequestCode)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        val printerService = BluetoothPrinterService(this)
+
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.example.print_ease_pos/native_printer"
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "discoverDevices" -> printerService.startDiscovery(result)
+                "connect" -> {
+                    val address = call.argument<String>("address") ?: ""
+                    printerService.connect(address, result)
+                }
+                "disconnect" -> {
+                    printerService.disconnect()
+                    result.success(true)
+                }
+                "isConnected" -> result.success(printerService.isConnected())
+                "writeBytes" -> {
+                    val data = call.argument<List<Int>>("data")?.map { it.toByte() }?.toByteArray() ?: byteArrayOf()
+                    printerService.printRawBytes(data, result)
+                }
+                "printTestReceipt" -> {
+                    val storeName = call.argument<String>("storeName") ?: ""
+                    printerService.printTestReceipt(storeName, result)
+                }
+                "getConnectedDevice" -> {
+                    val addr = printerService.getConnectedDeviceAddress()
+                    if (addr != null) {
+                        result.success(mapOf(
+                            "name" to (printerService.getConnectedDeviceName() ?: ""),
+                            "address" to addr
+                        ))
+                    } else {
+                        result.success(null)
                     }
                 }
                 else -> result.notImplemented()

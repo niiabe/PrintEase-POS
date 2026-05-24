@@ -19,6 +19,14 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
           SnackBar(
             content: Text(next.message!),
             backgroundColor: next.isError ? Colors.red : Colors.green,
+            action: next.isError
+                ? SnackBarAction(
+                    label: 'Dismiss',
+                    textColor: Colors.white,
+                    onPressed: () =>
+                        ref.read(backupProvider.notifier).clearMessage(),
+                  )
+                : null,
           ),
         );
         if (!next.isError) {

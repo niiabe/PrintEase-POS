@@ -18,34 +18,6 @@ class DownloadPdfButton extends ConsumerStatefulWidget {
 
 class _DownloadPdfButtonState extends ConsumerState<DownloadPdfButton> {
   @override
-  void initState() {
-    super.initState();
-    ref.listenManual(pdfProvider, (prev, next) {
-      if (next.isExporting != (prev?.isExporting ?? false)) {
-        if (!next.isExporting && next.error == null) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('PDF saved successfully'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        } else if (next.error != null && !next.isExporting) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to save PDF: ${next.error}'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        }
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final state = ref.watch(pdfProvider);
 
@@ -55,7 +27,7 @@ class _DownloadPdfButtonState extends ConsumerState<DownloadPdfButton> {
         height: 28,
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: state.isExporting ? null : () => _exportPdf(ref),
+          onTap: state.isExporting ? null : () => _exportAndShare(ref),
           child: state.isExporting
               ? const Padding(
                   padding: EdgeInsets.all(4),
@@ -69,7 +41,7 @@ class _DownloadPdfButtonState extends ConsumerState<DownloadPdfButton> {
     return FilledButton.icon(
       onPressed: state.isExporting
           ? null
-          : () => _exportPdf(ref),
+          : () => _exportAndShare(ref),
       icon: state.isExporting
           ? const SizedBox(
               width: 18,
@@ -80,11 +52,39 @@ class _DownloadPdfButtonState extends ConsumerState<DownloadPdfButton> {
               ),
             )
           : const Icon(Icons.picture_as_pdf),
-      label: Text(state.isExporting ? 'Saving...' : 'Download PDF'),
+      label: Text(state.isExporting ? 'Please wait...' : 'Download & Share'),
     );
   }
 
-  void _exportPdf(WidgetRef ref) {
-    ref.read(pdfProvider.notifier).exportReceipt(widget.receiptId);
+  Future<void> _exportAndShare(WidgetRef ref) async {
+    await ref.read(pdfProvider.notifier).exportReceipt(widget.receiptId);
+    if (!mounted) return;
+
+    final pdfState = ref.read(pdfProvider);
+    if (pdfState.error != null) {
+      _showError(pdfState.error!);
+      return;
+    }
+
+    final doc = pdfState.selectedDocument;
+    final docId = doc?.id;
+    if (docId == null) return;
+
+    await ref.read(pdfProvider.notifier).shareDocument(docId);
+    if (!mounted) return;
+
+    final afterShare = ref.read(pdfProvider);
+    if (afterShare.error != null) {
+      _showError(afterShare.error!);
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
   }
 }
